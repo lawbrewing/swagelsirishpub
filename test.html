@@ -2,41 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Law Brewing: Prohibition Run</title>
+    <title>Law Brewing: Prohibition Run - Iteration 1</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
     <style>
-        body { margin: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        canvas { border: 4px solid #d4af37; box-shadow: 0 0 50px rgba(0,0,0,0.9); }
+        body { margin: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        canvas { border: 4px solid #d4af37; }
     </style>
 </head>
 <body>
     <div id="game-container"></div>
 
     <script>
-        // --- GAME CONFIGURATION ---
-        const TILE_SIZE = 128; // Large tiles keep your vector drawings sharp
-        const MAP_WIDTH = 10;
-        const MAP_HEIGHT = 8;
-
-        // The Map Array: 0 = Grass, 1 = Road, 2 = Swagel's Pub, 3 = Law Factory
-        const worldMap = [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 3, 1, 1, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0, 2, 1, 1, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        ];
-
         const config = {
             type: Phaser.AUTO,
-            width: 1024,
-            height: 768,
+            width: 1200,
+            height: 800,
             parent: 'game-container',
-            pixelArt: false, // Set to false for smooth vector drawings
+            backgroundColor: '#2d4c2d', // Deep Green Base
             physics: { default: 'arcade' },
             scene: { preload: preload, create: create, update: update }
         };
@@ -47,55 +29,54 @@
         function preload() {
             const baseUrl = 'https://lawbrewing.github.io/LawBrewing/';
             
-            // Define your assets here. Easy to swap URLs later.
-            this.load.image('road', baseUrl + 'roads.jpg');
+            // Load images as individual, full assets
+            this.load.image('road_v', baseUrl + 'roads.jpg'); // Vertical Road
             this.load.image('truck', baseUrl + 'green.png');
-            this.load.image('pub', baseUrl + '1000002790.jpg');
+            this.load.image('pub_building', baseUrl + '1000002790.jpg');
             this.load.image('factory', baseUrl + 'buildings2.jpg');
-            this.load.image('grass', baseUrl + 'objects.jpg'); 
+            this.load.image('grass_detail', baseUrl + 'objects.jpg');
         }
 
         function create() {
-            // 1. GENERATE WORLD FROM ARRAY
-            for (let row = 0; row < MAP_HEIGHT; row++) {
-                for (let col = 0; col < MAP_WIDTH; col++) {
-                    let x = col * TILE_SIZE + (TILE_SIZE / 2);
-                    let y = row * TILE_SIZE + (TILE_SIZE / 2);
-                    let tileType = worldMap[row][col];
+            // 1. PLACE THE FACTORY (Start Point)
+            const factory = this.add.image(200, 200, 'factory');
+            factory.setDisplaySize(300, 200);
 
-                    // Draw Background Grass First
-                    this.add.image(x, y, 'grass').setDisplaySize(TILE_SIZE, TILE_SIZE).setAlpha(0.3);
-
-                    if (tileType === 1) { // Road
-                        this.add.image(x, y, 'road').setDisplaySize(TILE_SIZE, TILE_SIZE);
-                    } else if (tileType === 2) { // Swagel's Pub
-                        this.add.image(x, y, 'pub').setDisplaySize(TILE_SIZE, TILE_SIZE);
-                    } else if (tileType === 3) { // Law Factory
-                        this.add.image(x, y, 'factory').setDisplaySize(TILE_SIZE, TILE_SIZE);
-                    }
-                }
+            // 2. DRAW THE ROAD MANUALLY (Simple Straight Path)
+            // We place them one by one to ensure they look like a solid road
+            for (let i = 0; i < 6; i++) {
+                let road = this.add.image(200 + (i * 150), 450, 'road_v');
+                road.setDisplaySize(150, 150);
             }
 
-            // 2. INITIALIZE PLAYER
-            player = this.physics.add.sprite(192, 192, 'truck');
-            player.setDisplaySize(80, 50);
+            // 3. PLACE THE PUB (The Finish Line)
+            const pub = this.add.image(1000, 450, 'pub_building');
+            pub.setDisplaySize(200, 200);
+
+            // 4. SCATTER SOME OBJECTS (Trees/Rocks from your objects file)
+            const trees = this.add.image(500, 150, 'grass_detail');
+            trees.setDisplaySize(150, 150);
+
+            // 5. THE TRUCK
+            player = this.physics.add.sprite(200, 450, 'truck');
+            player.setDisplaySize(100, 60);
             player.setCollideWorldBounds(true);
 
-            // 3. UI OVERLAY
-            this.add.text(20, 20, 'LAW BREWING: PROHIBITION RUN', { 
-                fontFamily: 'Georgia, serif', fontSize: '28px', fill: '#d4af37' 
-            }).setScrollFactor(0);
+            // 6. UI
+            this.add.text(30, 30, 'LAW BREWING RUN', { 
+                fontFamily: 'Georgia, serif', fontSize: '40px', fill: '#d4af37' 
+            });
 
             cursors = this.input.keyboard.createCursorKeys();
         }
 
         function update() {
             player.setVelocity(0);
-            const speed = 250;
+            const speed = 300;
 
             if (cursors.left.isDown) {
                 player.setVelocityX(-speed);
-                player.setAngle(-180);
+                player.setAngle(180);
                 player.setFlipY(true);
             } else if (cursors.right.isDown) {
                 player.setVelocityX(speed);
