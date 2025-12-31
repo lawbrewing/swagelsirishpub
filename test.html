@@ -6,92 +6,102 @@
     <title>Law Brewing: Prohibition Run</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
     <style>
-        body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        canvas { border: 4px solid #d4af37; border-radius: 4px; }
+        body { margin: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        canvas { border: 4px solid #d4af37; box-shadow: 0 0 50px rgba(0,0,0,0.9); }
     </style>
 </head>
 <body>
     <div id="game-container"></div>
 
     <script>
+        // --- GAME CONFIGURATION ---
+        const TILE_SIZE = 128; // Large tiles keep your vector drawings sharp
+        const MAP_WIDTH = 10;
+        const MAP_HEIGHT = 8;
+
+        // The Map Array: 0 = Grass, 1 = Road, 2 = Swagel's Pub, 3 = Law Factory
+        const worldMap = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 3, 1, 1, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 2, 1, 1, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ];
+
         const config = {
             type: Phaser.AUTO,
             width: 1024,
             height: 768,
             parent: 'game-container',
-            backgroundColor: '#1b301b', // Dark Grass Green
-            physics: { default: 'arcade', arcade: { debug: false } },
+            pixelArt: false, // Set to false for smooth vector drawings
+            physics: { default: 'arcade' },
             scene: { preload: preload, create: create, update: update }
         };
 
         const game = new Phaser.Game(config);
-        let player;
-        let cursors;
+        let player, cursors;
 
         function preload() {
             const baseUrl = 'https://lawbrewing.github.io/LawBrewing/';
             
-            // Loading your assets
-            this.load.image('road_tile', baseUrl + 'roads.jpg'); 
+            // Define your assets here. Easy to swap URLs later.
+            this.load.image('road', baseUrl + 'roads.jpg');
             this.load.image('truck', baseUrl + 'green.png');
             this.load.image('pub', baseUrl + '1000002790.jpg');
-            this.load.image('landmark', baseUrl + 'buildings2.jpg');
-            this.load.image('objects', baseUrl + 'objects.jpg');
+            this.load.image('factory', baseUrl + 'buildings2.jpg');
+            this.load.image('grass', baseUrl + 'objects.jpg'); 
         }
 
         function create() {
-            // 1. CREATE A SCENE (Not just random blobs)
-            // We'll create a "Street" at the bottom
-            for (let i = 0; i < 10; i++) {
-                // Place road tiles. We scale them so they aren't blurry
-                let r = this.add.image(i * 200, 600, 'road_tile');
-                r.setDisplaySize(200, 200);
+            // 1. GENERATE WORLD FROM ARRAY
+            for (let row = 0; row < MAP_HEIGHT; row++) {
+                for (let col = 0; col < MAP_WIDTH; col++) {
+                    let x = col * TILE_SIZE + (TILE_SIZE / 2);
+                    let y = row * TILE_SIZE + (TILE_SIZE / 2);
+                    let tileType = worldMap[row][col];
+
+                    // Draw Background Grass First
+                    this.add.image(x, y, 'grass').setDisplaySize(TILE_SIZE, TILE_SIZE).setAlpha(0.3);
+
+                    if (tileType === 1) { // Road
+                        this.add.image(x, y, 'road').setDisplaySize(TILE_SIZE, TILE_SIZE);
+                    } else if (tileType === 2) { // Swagel's Pub
+                        this.add.image(x, y, 'pub').setDisplaySize(TILE_SIZE, TILE_SIZE);
+                    } else if (tileType === 3) { // Law Factory
+                        this.add.image(x, y, 'factory').setDisplaySize(TILE_SIZE, TILE_SIZE);
+                    }
+                }
             }
 
-            // 2. PLACE THE DESTINATION (Swagel's Pub)
-            // We place it at the end of the road
-            let finishLine = this.add.image(1800, 480, 'pub');
-            finishLine.setDisplaySize(250, 250);
+            // 2. INITIALIZE PLAYER
+            player = this.physics.add.sprite(192, 192, 'truck');
+            player.setDisplaySize(80, 50);
+            player.setCollideWorldBounds(true);
 
-            // 3. PLACE LANDMARKS (Lambeau / Town Hall)
-            // We place these in the "background" to create depth
-            let building = this.add.image(500, 250, 'landmark');
-            building.setDisplaySize(500, 350);
-
-            // 4. THE PLAYER (The Green Truck)
-            player = this.physics.add.sprite(150, 600, 'truck');
-            player.setDisplaySize(120, 70);
-            player.setCollideWorldBounds(false); // Let it drive off screen for now
-
-            // 5. THE CAMERA (This makes it look like a real game)
-            // The camera will follow the truck
-            this.cameras.main.startFollow(player, true, 0.05, 0.05);
-            this.cameras.main.setZoom(0.8); // Zoom out a bit to see the world
-            this.cameras.main.setBounds(0, 0, 2000, 768);
-
-            // 6. UI OVERLAY
-            let uiText = this.add.text(20, 20, 'LAW BREWING: PROHIBITION RUN', { 
-                fontFamily: 'Georgia, serif', fontSize: '32px', fill: '#d4af37' 
-            }).setScrollFactor(0); // Fixes text to the screen, not the world
+            // 3. UI OVERLAY
+            this.add.text(20, 20, 'LAW BREWING: PROHIBITION RUN', { 
+                fontFamily: 'Georgia, serif', fontSize: '28px', fill: '#d4af37' 
+            }).setScrollFactor(0);
 
             cursors = this.input.keyboard.createCursorKeys();
         }
 
         function update() {
             player.setVelocity(0);
-            const speed = 300;
+            const speed = 250;
 
             if (cursors.left.isDown) {
                 player.setVelocityX(-speed);
-                player.setAngle(180);
+                player.setAngle(-180);
                 player.setFlipY(true);
             } else if (cursors.right.isDown) {
                 player.setVelocityX(speed);
                 player.setAngle(0);
                 player.setFlipY(false);
-            }
-
-            if (cursors.up.isDown) {
+            } else if (cursors.up.isDown) {
                 player.setVelocityY(-speed);
                 player.setAngle(-90);
             } else if (cursors.down.isDown) {
