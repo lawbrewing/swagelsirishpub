@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Law Brewing: Prohibition Run</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
     <style>
-        body { margin: 0; background: #222; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: sans-serif; }
-        canvas { border: 4px solid #d4af37; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        body { margin: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        canvas { border: 5px solid #d4af37; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
@@ -13,11 +16,11 @@
     <script>
         const config = {
             type: Phaser.AUTO,
-            width: 640,
-            height: 640,
+            width: 900,
+            height: 600,
             parent: 'game-container',
-            pixelArt: true,
-            physics: { default: 'arcade' },
+            backgroundColor: '#2d4c2d', // Wisconsin Green
+            physics: { default: 'arcade', arcade: { debug: false } },
             scene: { preload: preload, create: create, update: update }
         };
 
@@ -26,63 +29,76 @@
         let cursors;
 
         function preload() {
-            // Pulling from your GitHub
+            // Your GitHub Base URL
             const baseUrl = 'https://lawbrewing.github.io/LawBrewing/';
             
-            // Slice the 128x128 roads image into four 64x64 tiles
-            this.load.spritesheet('roads', baseUrl + 'roads.png', { frameWidth: 64, frameHeight: 64 });
-            
-            // Load the truck (Reminder: Ensure this is a PNG with transparency on your GitHub!)
+            // Load Assets as individual Images to prevent "Sprite-Slicing" errors
+            this.load.image('road', baseUrl + 'roads.jpg');
             this.load.image('truck', baseUrl + 'green.png');
-            
-            // Load the destination
             this.load.image('pub', baseUrl + '1000002790.jpg');
+            this.load.image('landmark', baseUrl + 'buildings2.jpg'); 
         }
 
         function create() {
-            // 1. CREATE A SIMPLE MAP (10x10 tiles)
-            // Frame 0=Cross, 1=Straight, 2=T-Junction, 3=Corner (based on your roads.png)
-            for (let y = 0; y < 10; y++) {
-                for (let x = 0; x < 10; x++) {
-                    // Fill with grass/straight roads for now
-                    this.add.image(x * 64 + 32, y * 64 + 32, 'roads', 1); 
-                }
+            // 1. DRAW THE WORLD (Manual Grid)
+            // We draw a road across the middle first
+            for (let i = 0; i < 8; i++) {
+                let r = this.add.image(i * 128, 450, 'road');
+                r.setDisplaySize(128, 128); // Force size to prevent "color blobs"
             }
 
-            // 2. PLACE SWAGEL'S PUB (The Goal)
-            this.add.image(576, 576, 'pub').setScale(0.5); // Scaled down to fit tile
+            // 2. PLACE THE LANDMARKS
+            // Lambeau Field / Town Hall in the background
+            let lamy = this.add.image(450, 180, 'landmark');
+            lamy.setDisplaySize(400, 250);
 
-            // 3. PLACE THE PLAYER
-            player = this.physics.add.sprite(96, 96, 'truck');
+            // Swagel's Pub at the end of the road
+            let finishLine = this.add.image(800, 450, 'pub');
+            finishLine.setDisplaySize(150, 150);
+
+            // 3. THE PLAYER (Law Brewing Truck)
+            player = this.physics.add.sprite(100, 450, 'truck');
+            player.setDisplaySize(100, 60); // Adjusting truck to fit road width
             player.setCollideWorldBounds(true);
-            player.setScale(0.8); // Make truck fit within the lane
 
-            // 4. SETUP CONTROLS
-            cursors = this.input.keyboard.createCursorKeys();
-            
-            this.add.text(20, 20, 'Law Brewing: Prohibition Run (Phase 1)', { 
-                fontSize: '20px', fill: '#d4af37', backgroundColor: '#000' 
+            // 4. THE UI
+            this.add.text(20, 20, 'LAW BREWING: PROHIBITION RUN', { 
+                fontFamily: 'Georgia, serif',
+                fontSize: '32px', 
+                fill: '#d4af37',
+                stroke: '#000',
+                strokeThickness: 4
             });
+
+            this.add.text(20, 60, 'Destination: Swagel\'s Irish Pub', { 
+                fontSize: '18px', fill: '#ffffff'
+            });
+
+            // 5. INPUTS
+            cursors = this.input.keyboard.createCursorKeys();
         }
 
         function update() {
-            // Movement Logic
             player.setVelocity(0);
 
+            const speed = 200;
+
             if (cursors.left.isDown) {
-                player.setVelocityX(-160);
-                player.setAngle(-90);
+                player.setVelocityX(-speed);
+                player.setAngle(-180);
+                player.setFlipY(true); // Flips truck so it's not upside down
             } else if (cursors.right.isDown) {
-                player.setVelocityX(160);
-                player.setAngle(90);
+                player.setVelocityX(speed);
+                player.setAngle(0);
+                player.setFlipY(false);
             }
 
             if (cursors.up.isDown) {
-                player.setVelocityY(-160);
-                player.setAngle(0);
+                player.setVelocityY(-speed);
+                player.setAngle(-90);
             } else if (cursors.down.isDown) {
-                player.setVelocityY(160);
-                player.setAngle(180);
+                player.setVelocityY(speed);
+                player.setAngle(90);
             }
         }
     </script>
