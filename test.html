@@ -2,125 +2,122 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Law Brewing: Prohibition Run</title>
+    <title>Law Brewing: Auto-Slicer Engine</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
     <style>
-        body { margin: 0; background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        canvas { border: 4px solid #d4af37; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        body { margin: 0; background: #050505; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        canvas { border: 4px solid #d4af37; box-shadow: 0 0 50px rgba(0,255,0,0.2); }
     </style>
 </head>
 <body>
-    <div id="game-container"></div>
-
     <script>
-        // --- CONFIGURATION ---
-        const TILE_SIZE = 128; 
-        const SPEED = 300;
-        
-        // --- ASSET CONFIG (Use PNGs here!) ---
+        // --- ASSET CONFIGURATION ---
+        // Double check these filenames match your GitHub EXACTLY (Case Sensitive!)
         const ASSETS = {
-            // Using '.png' based on your repo screenshot. 
-            // If the sprite sheet loading fails, we will see it in the debug log.
-            roads: { key: 'roads', url: 'https://lawbrewing.github.io/LawBrewing/roads.png' }, 
-            buildings: { key: 'buildings', url: 'https://lawbrewing.github.io/LawBrewing/buildings2.png' }, 
-            truck: { key: 'truck', url: 'https://lawbrewing.github.io/LawBrewing/green.png' }
+            base: 'https://lawbrewing.github.io/LawBrewing/',
+            files: [
+                { key: 'roads_raw', file: 'roads.png' },      // Must be the 2x2 grid
+                { key: 'buildings_raw', file: 'buildings2.png' }, // Must be the 1x3 row
+                { key: 'truck', file: 'green.png' }
+            ]
         };
 
-        // --- THE MAP DATA ---
-        // Frames: 0=Cross, 1=Straight, 2=T-Junction, 3=Corner
-        const levelMap = [
-            { x: 1, y: 1, type: 'road', frame: 3, angle: 90 },  // Corner Top-Left
-            { x: 2, y: 1, type: 'road', frame: 1, angle: 90 },  // Straight
-            { x: 3, y: 1, type: 'road', frame: 1, angle: 90 },  // Straight
-            { x: 4, y: 1, type: 'road', frame: 3, angle: 180 }, // Corner Top-Right
-            { x: 4, y: 2, type: 'road', frame: 1, angle: 0 },   // Straight Down
-            { x: 4, y: 3, type: 'road', frame: 3, angle: -90 }, // Corner Bottom-Right
-            { x: 3, y: 3, type: 'road', frame: 1, angle: 90 },  // Straight Left
-            { x: 2, y: 3, type: 'road', frame: 0, angle: 0 },   // Cross Junction
+        // --- MAP DESIGN (The "City Blueprint") ---
+        // 0=Cross, 1=Straight, 2=T-Junction, 3=Corner
+        const mapLayout = [
+            { x: 1, y: 1, type: 'road', frame: 3, angle: 90 }, // Top-Left Corner
+            { x: 2, y: 1, type: 'road', frame: 1, angle: 90 },
+            { x: 3, y: 1, type: 'road', frame: 1, angle: 90 },
+            { x: 4, y: 1, type: 'road', frame: 3, angle: 180 }, // Top-Right Corner
+            { x: 4, y: 2, type: 'road', frame: 1, angle: 0 },
+            { x: 4, y: 3, type: 'road', frame: 3, angle: -90 }, // Bottom-Right Corner
+            { x: 3, y: 3, type: 'road', frame: 1, angle: 90 },
+            { x: 2, y: 3, type: 'road', frame: 2, angle: 0 },  // T-Junction
             
-            // Buildings (Frame 0 = First building in the sheet)
-            { x: 2, y: 0, type: 'building', frame: 0 }, 
-            { x: 5, y: 1, type: 'building', frame: 1 }, 
-            { x: 1, y: 3, type: 'building', frame: 2 }  
+            // Buildings (0=TownHall, 1=Lambeau, 2=Pub)
+            { x: 2, y: 0, type: 'building', frame: 0, scale: 1.0 }, // Town Hall
+            { x: 5, y: 1, type: 'building', frame: 1, scale: 1.5 }, // Lambeau
+            { x: 1, y: 3, type: 'building', frame: 2, scale: 0.8 }  // Pub
         ];
 
-        const config = {
+        new Phaser.Game({
             type: Phaser.AUTO,
             width: 1024,
             height: 768,
-            parent: 'game-container',
             backgroundColor: '#1b301b',
             physics: { default: 'arcade' },
-            scene: { preload: preload, create: create, update: update }
-        };
+            scene: {
+                preload: function() {
+                    // Load everything as raw images first to avoid "sizing" errors
+                    ASSETS.files.forEach(a => this.load.image(a.key, ASSETS.base + a.file));
+                    
+                    // Debug helper
+                    this.load.on('loaderror', (file) => {
+                        console.error('FAILED TO LOAD:', file.src);
+                        alert(`Error: Could not load ${file.key}. Check if the file is .jpg or .png on GitHub!`);
+                    });
+                },
+                create: function() {
+                    // --- STEP 1: AUTO-SLICE THE ROADS (2x2 Grid) ---
+                    const roadImg = this.textures.get('roads_raw').getSourceImage();
+                    if (roadImg.width === 0) return; // Stop if failed to load
+                    
+                    // We mathematically cut the image into 4 exact quadrants
+                    // Top-Left (Cross), Top-Right (Straight), Bot-Left (T), Bot-Right (Corner)
+                    this.textures.addSpriteSheet('roads', this.textures.get('roads_raw'), {
+                        frameWidth: roadImg.width / 2,
+                        frameHeight: roadImg.height / 2
+                    });
 
-        const game = new Phaser.Game(config);
-        let player, cursors;
-        let debugText;
+                    // --- STEP 2: AUTO-SLICE THE BUILDINGS (1x3 Row) ---
+                    const bldgImg = this.textures.get('buildings_raw').getSourceImage();
+                    // We cut the image into 3 equal vertical strips
+                    this.textures.addSpriteSheet('buildings', this.textures.get('buildings_raw'), {
+                        frameWidth: bldgImg.width / 3,
+                        frameHeight: bldgImg.height
+                    });
 
-        function preload() {
-            // Debug Text to warn us if files fail
-            debugText = this.add.text(10, 10, 'Loading...', { fill: '#0f0' });
+                    // --- STEP 3: BUILD THE MAP ---
+                    const TILE_SIZE = 128;
+                    
+                    mapLayout.forEach(item => {
+                        let px = item.x * TILE_SIZE;
+                        let py = item.y * TILE_SIZE;
 
-            this.load.on('loaderror', (file) => {
-                debugText.setText('ERROR: Could not load ' + file.key + '\nCheck filename extension (.png vs .jpg)!');
-                debugText.setColor('#ff0000');
-            });
+                        if (item.type === 'road') {
+                            // Roads use the 2x2 sheet we just made
+                            let r = this.add.image(px, py, 'roads', item.frame);
+                            r.setDisplaySize(TILE_SIZE, TILE_SIZE);
+                            r.setAngle(item.angle);
+                        } 
+                        else if (item.type === 'building') {
+                            // Buildings use the 1x3 sheet
+                            let b = this.add.image(px, py, 'buildings', item.frame);
+                            // Auto-scale to keep aspect ratio but fit grid
+                            b.setScale(item.scale * 0.5); 
+                            b.setDepth(10);
+                        }
+                    });
 
-            // LOAD IMAGES
-            // We load them as normal images first to let Phaser read the size, 
-            // then we slice them in the 'create' step if needed.
-            this.load.spritesheet(ASSETS.roads.key, ASSETS.roads.url, { frameWidth: 512, frameHeight: 512 }); 
-            // Note: If your roads.png is 1024x1024, 512 cuts it into 4. If it's different, we adjust this number.
-
-            // Assuming buildings2.png is roughly 1500 wide, split into 3
-            this.load.spritesheet(ASSETS.buildings.key, ASSETS.buildings.url, { frameWidth: 512, frameHeight: 512 }); 
-
-            this.load.image(ASSETS.truck.key, ASSETS.truck.url);
-        }
-
-        function create() {
-            debugText.destroy(); // Clear loading text
-
-            // 1. GENERATE MAP
-            levelMap.forEach(tile => {
-                let posX = tile.x * TILE_SIZE;
-                let posY = tile.y * TILE_SIZE;
-
-                if (tile.type === 'road') {
-                    let r = this.add.image(posX, posY, ASSETS.roads.key, tile.frame);
-                    r.setDisplaySize(TILE_SIZE, TILE_SIZE);
-                    r.setAngle(tile.angle);
-                } 
-                else if (tile.type === 'building') {
-                    let b = this.add.image(posX, posY, ASSETS.buildings.key, tile.frame);
-                    // Keeping buildings proportional
-                    b.setDisplaySize(TILE_SIZE * 1.5, TILE_SIZE * 1.5);
-                    b.setDepth(10);
+                    // --- STEP 4: PLAYER ---
+                    const player = this.physics.add.sprite(256, 384, 'truck');
+                    player.setDisplaySize(80, 50);
+                    player.setDepth(20);
+                    player.setCollideWorldBounds(true);
+                    
+                    // Controls
+                    const cursors = this.input.keyboard.createCursorKeys();
+                    this.events.on('update', () => {
+                        player.setVelocity(0);
+                        const s = 300;
+                        if (cursors.left.isDown) { player.setVelocityX(-s); player.setAngle(180); player.setFlipY(true); }
+                        else if (cursors.right.isDown) { player.setVelocityX(s); player.setAngle(0); player.setFlipY(false); }
+                        else if (cursors.up.isDown) { player.setVelocityY(-s); player.setAngle(-90); }
+                        else if (cursors.down.isDown) { player.setVelocityY(s); player.setAngle(90); }
+                    });
                 }
-            });
-
-            // 2. PLAYER
-            player = this.physics.add.sprite(TILE_SIZE * 2, TILE_SIZE * 3, ASSETS.truck.key);
-            player.setDisplaySize(80, 50); 
-            player.setDepth(20);
-            player.setCollideWorldBounds(true);
-
-            // 3. CAMERA
-            this.cameras.main.startFollow(player, true, 0.1, 0.1);
-            this.cameras.main.setZoom(1.0);
-
-            // 4. CONTROLS
-            cursors = this.input.keyboard.createCursorKeys();
-        }
-
-        function update() {
-            player.setVelocity(0);
-            if (cursors.left.isDown) { player.setVelocityX(-SPEED); player.setAngle(180); player.setFlipY(true); }
-            else if (cursors.right.isDown) { player.setVelocityX(SPEED); player.setAngle(0); player.setFlipY(false); }
-            else if (cursors.up.isDown) { player.setVelocityY(-SPEED); player.setAngle(-90); }
-            else if (cursors.down.isDown) { player.setVelocityY(SPEED); player.setAngle(90); }
-        }
+            }
+        });
     </script>
 </body>
 </html>
