@@ -25,28 +25,34 @@
             padding-bottom: 50px;
         }
 
-        /* --- HEADER --- */
+        /* --- HEADER (Centered & Responsive) --- */
         .main-header {
             width: 100%;
             background-color: white;
             display: flex;
-            justify-content: flex-start;
+            justify-content: center; /* CENTERED */
             align-items: center;
-            padding: 30px 40px;
+            padding: 20px;
             border-bottom: 10px solid var(--packer-gold);
             box-shadow: 0 0 50px rgba(0,0,0,0.7);
         }
 
-        .logo-container { display: flex; align-items: center; gap: 40px; }
+        .logo-container { 
+            display: flex; 
+            align-items: center; 
+            gap: 40px; 
+            max-width: 100%; /* Prevents overflow */
+        }
 
         .logo-img {
-            max-height: 300px; /* RESTORED MASSIVE SIZE */
+            max-height: 300px; /* Massive size */
             width: auto;
+            max-width: 100%; /* Ensures it fits on mobile without stretching */
+            object-fit: contain; /* Keeps aspect ratio perfect */
             display: block;
             background-color: white;
             padding: 10px;
             border-radius: 50%;
-            /* Deep glow + Inner shadow for depth */
             box-shadow: 0 0 30px rgba(255, 182, 18, 0.9), inset 0 0 20px rgba(0,0,0,0.1);
             border: 2px solid #eee;
         }
@@ -104,7 +110,13 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- COOLER LAW BREWING BUTTON --- */
+        /* --- GLOWING LAW BREWING BUTTON --- */
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 10px var(--packer-gold); border-color: var(--packer-gold); }
+            50% { box-shadow: 0 0 30px var(--packer-gold), 0 0 60px rgba(255, 182, 18, 0.6); border-color: #fff; }
+            100% { box-shadow: 0 0 10px var(--packer-gold); border-color: var(--packer-gold); }
+        }
+
         .law-brewing-banner {
             background: linear-gradient(135deg, #1a1a1a, #000);
             border: 2px solid var(--packer-gold);
@@ -113,15 +125,15 @@
             border-radius: 8px;
             margin-bottom: 50px;
             cursor: pointer;
-            transition: all 0.3s ease;
             text-decoration: none;
             display: block;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            /* Apply the Pulse Animation */
+            animation: pulse-glow 3s infinite ease-in-out;
         }
 
-        /* The Gold Shine Effect */
+        /* The Shine Sweep Effect */
         .law-brewing-banner::after {
             content: '';
             position: absolute;
@@ -131,12 +143,6 @@
             transition: 0.5s;
         }
 
-        .law-brewing-banner:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 0 30px var(--packer-gold); 
-            border-color: #fff;
-        }
-        
         .law-brewing-banner:hover::after { left: 100%; }
 
         .law-brewing-banner h2 { 
@@ -213,7 +219,8 @@
 
         @media (max-width: 900px) {
              .main-header { padding: 20px; flex-direction: column; text-align: center; }
-             .logo-img { max-height: 200px; }
+             /* Allow logo to shrink on mobile if needed */
+             .logo-img { max-height: 200px; } 
              .header-title { font-size: 3rem; }
              .logo-container { flex-direction: column; gap: 15px; }
         }
@@ -238,7 +245,7 @@
         <div id="view-menu" class="view-section active">
             
             <a href="https://lawbrewing.github.io/LawBrewing/index.html" class="law-brewing-banner">
-                <h2>VISIT LAW BREWING CO.</h2>
+                <h2>VISIT LAW BREWING</h2>
                 <p>Click here for Live Tap List & Brewery Games</p>
             </a>
 
@@ -372,7 +379,6 @@
         }
 
         // --- 4. RUMBLE LOGIC ---
-        // Global variables for Rumble
         let rumbleState = localStorage.getItem('rumbleState') || 'SETUP';
         let rumblePlayers = JSON.parse(localStorage.getItem('rumblePlayers')) || [];
         let rumbleOwnership = JSON.parse(localStorage.getItem('rumbleOwnership')) || {}; 
