@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Swagel's Irish Pub</title>
     <style>
-        /* --- GLOBAL VARIABLES & RESET --- */
+        /* --- GLOBAL VARIABLES (Packers / Irish Theme) --- */
         :root {
-            --irish-green: #0a3b1e;
-            --wood-brown: #3e2723;
-            --gold-accent: #ffc107;
+            --packer-green: #203731;  /* The official Dark Green */
+            --packer-gold: #ffb612;   /* The official Athletic Gold */
             --cream-text: #fdfbf7;
-            --white-glow: 0 0 20px 5px rgba(255, 255, 255, 0.6);
+            --wood-dark: #2a1a15;
+            /* The Glowing Effect for the Logo */
+            --gold-glow: drop-shadow(0 0 20px rgba(255, 182, 18, 0.8));
         }
 
         * {
@@ -21,51 +22,58 @@
         }
 
         body {
-            font-family: 'Georgia', serif; /* Classic Pub Serif */
-            background-color: var(--irish-green);
-            background-image: linear-gradient(to bottom, #0a3b1e, #052010); /* Subtle depth */
+            font-family: 'Georgia', serif; /* Keeping the classic Pub feel */
+            background-color: var(--packer-green);
+            /* Subtle gradient for depth */
+            background-image: linear-gradient(to bottom, #203731, #0e1a17);
             color: var(--cream-text);
             line-height: 1.6;
-            padding-top: 140px; /* Space for the fixed header */
+            /* Removed padding-top since header is no longer sticky */
         }
 
-        /* --- THE STICKY BACKLIT HEADER --- */
-        .sticky-header {
-            position: fixed;
-            top: 0;
-            left: 0;
+        /* --- THE HEADER (Standard, Not Sticky) --- */
+        .main-header {
+            position: relative; /* Scrolls with the page */
             width: 100%;
             background-color: white;
-            z-index: 1000;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px 0;
-            
-            /* The "Backlit" Effect */
-            box-shadow: var(--white-glow);
-            border-bottom: 4px solid var(--gold-accent);
+            padding: 20px 0;
+            border-bottom: 6px solid var(--packer-gold);
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
         .logo-img {
-            max-height: 100px; /* Adjusts nicely on resize */
+            max-height: 120px;
             width: auto;
             display: block;
-            transition: max-height 0.3s ease;
+            /* THE GLOWING EFFECT */
+            filter: var(--gold-glow);
+            transition: transform 0.3s ease;
+        }
+        
+        .logo-img:hover {
+            transform: scale(1.05); /* Slight pulse on hover */
         }
 
         /* --- NAVIGATION / CTA BAR --- */
         .cta-bar {
             text-align: center;
-            margin: 20px 0 40px 0;
+            margin: 40px 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
-        .game-btn {
-            background-color: var(--gold-accent);
-            color: var(--wood-brown);
+        /* Primary Button Style */
+        .action-btn {
+            background-color: var(--packer-gold);
+            color: var(--packer-green);
             font-family: 'Verdana', sans-serif;
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             padding: 15px 30px;
             border: 2px solid #d4a000;
             border-radius: 8px;
@@ -73,18 +81,25 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             display: inline-block;
         }
 
-        .game-btn:hover {
-            background-color: #ffe082;
+        .action-btn:hover {
+            background-color: #ffca4f;
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+            box-shadow: 0 0 15px var(--packer-gold);
         }
 
-        /* --- MENU SECTION (Dynamic Area) --- */
+        /* Law Brewing Link Style (Distinct) */
+        .law-link {
+            background-color: #000;
+            color: var(--packer-gold);
+            border: 2px solid var(--packer-gold);
+        }
+
+        /* --- MENU SECTION --- */
         .container {
             max-width: 1000px;
             margin: 0 auto;
@@ -93,7 +108,7 @@
 
         .menu-section {
             background-color: rgba(0, 0, 0, 0.4); /* Dark glass effect */
-            border: 1px solid var(--gold-accent);
+            border: 2px solid var(--packer-gold);
             border-radius: 12px;
             padding: 40px;
             margin-bottom: 50px;
@@ -102,13 +117,13 @@
         .section-title {
             text-align: center;
             font-size: 2.5rem;
-            color: var(--gold-accent);
+            color: var(--packer-gold);
             margin-bottom: 30px;
-            border-bottom: 1px solid rgba(255, 193, 7, 0.3);
+            border-bottom: 1px solid rgba(255, 182, 18, 0.3);
             padding-bottom: 10px;
+            text-shadow: 2px 2px 0 #000;
         }
 
-        /* Grid for Menu Items */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -119,7 +134,7 @@
             background-color: rgba(255, 255, 255, 0.05);
             padding: 20px;
             border-radius: 8px;
-            border-left: 4px solid var(--gold-accent);
+            border-left: 5px solid var(--packer-gold);
         }
 
         .menu-item h3 {
@@ -138,61 +153,74 @@
             display: block;
             margin-top: 10px;
             font-weight: bold;
-            color: var(--gold-accent);
+            color: var(--packer-gold);
+            font-size: 1.1rem;
         }
 
         .admin-note {
             text-align: center;
             font-size: 0.8rem;
             color: #777;
-            margin-top: 40px;
+            margin: 40px 0;
+            padding-bottom: 20px;
         }
 
         /* --- MOBILE OPTIMIZATION --- */
         @media (max-width: 600px) {
-            body {
-                padding-top: 110px; /* Smaller header space */
-            }
-            .logo-img {
-                max-height: 70px; /* Smaller logo on phone */
-            }
-            .section-title {
-                font-size: 2rem;
-            }
-            .menu-section {
-                padding: 20px;
-            }
+            .logo-img { max-height: 90px; }
+            .section-title { font-size: 2rem; }
+            .menu-section { padding: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <header class="sticky-header">
+    <header class="main-header">
         <img src="https://lawbrewing.github.io/swagelsirishpub/sip.png" alt="Swagel's Irish Pub Logo" class="logo-img">
     </header>
 
     <div class="container">
 
         <div class="cta-bar">
-            <a href="#" class="game-btn">Play "The Keg Run"</a>
+            <a href="https://lawbrewing.github.io/LawBrewing/" class="action-btn">🎮 Play "The Keg Run"</a>
+            
+            <a href="https://lawbrewing.github.io/LawBrewing/index.html" class="action-btn law-link">🍺 See Law Brewing Taps</a>
         </div>
 
-        <section id="admin-menu-area" class="menu-section">
-            <h2 class="section-title">Pub Menu</h2>
+        <section class="menu-section">
+            <h2 class="section-title">Pub Grub</h2>
             
             <div class="menu-grid">
                 <div class="menu-item">
-                    <h3>Law's Lager</h3>
-                    <p>Crisp, golden, and brewed right here in Wisconsin.</p>
-                    <span class="menu-price">$6.00</span>
-                </div>
-
-                <div class="menu-item">
                     <h3>The Green Bay Burger</h3>
-                    <p>Double patty, cheddar cheese, bacon, and house sauce.</p>
+                    <p>Double patty, cheddar cheese, bacon, and house sauce on a pretzel bun.</p>
                     <span class="menu-price">$14.00</span>
                 </div>
 
+                <div class="menu-item">
+                    <h3>Cheese Curds</h3>
+                    <p>Authentic Wisconsin white cheddar, beer-battered and fried golden.</p>
+                    <span class="menu-price">$10.00</span>
+                </div>
+
+                <div class="menu-item">
+                    <h3>Soft Pretzel Sticks</h3>
+                    <p>Served with warm Law Brewing beer cheese dip.</p>
+                    <span class="menu-price">$9.00</span>
+                </div>
+
+                <div class="menu-item">
+                    <h3>Swagel's Stew</h3>
+                    <p>Hearty beef and vegetable stew slow-cooked with stout.</p>
+                    <span class="menu-price">$12.00</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="menu-section">
+            <h2 class="section-title">From the Bar</h2>
+            
+            <div class="menu-grid">
                 <div class="menu-item">
                     <h3>Swagel's Stout</h3>
                     <p>Dark, creamy, with hints of coffee and chocolate.</p>
@@ -200,15 +228,21 @@
                 </div>
 
                 <div class="menu-item">
-                    <h3>Soft Pretzel Sticks</h3>
-                    <p>Served with warm beer cheese dip.</p>
-                    <span class="menu-price">$9.00</span>
+                    <h3>Law's Lager</h3>
+                    <p>Crisp, golden, and brewed right here in Wisconsin.</p>
+                    <span class="menu-price">$6.00</span>
+                </div>
+                
+                <div class="menu-item">
+                    <h3>Jameson & Ginger</h3>
+                    <p>Classic Irish whiskey with ginger ale and lime.</p>
+                    <span class="menu-price">$8.00</span>
                 </div>
             </div>
         </section>
 
         <div class="admin-note">
-            <a href="#" style="color: #444; text-decoration: none;">Admin Login</a>
+            <a href="admin.html" style="color: #444; text-decoration: none;">Admin Login</a>
         </div>
 
     </div>
