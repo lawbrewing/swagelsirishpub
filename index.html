@@ -25,30 +25,25 @@
             padding-bottom: 50px;
         }
 
-        /* --- HEADER (Centered & Responsive) --- */
+        /* --- HEADER --- */
         .main-header {
             width: 100%;
             background-color: white;
             display: flex;
-            justify-content: center; /* CENTERED */
+            justify-content: center;
             align-items: center;
             padding: 20px;
             border-bottom: 10px solid var(--packer-gold);
             box-shadow: 0 0 50px rgba(0,0,0,0.7);
         }
 
-        .logo-container { 
-            display: flex; 
-            align-items: center; 
-            gap: 40px; 
-            max-width: 100%; /* Prevents overflow */
-        }
+        .logo-container { display: flex; align-items: center; gap: 40px; max-width: 100%; }
 
         .logo-img {
-            max-height: 300px; /* Massive size */
+            max-height: 300px;
             width: auto;
-            max-width: 100%; /* Ensures it fits on mobile without stretching */
-            object-fit: contain; /* Keeps aspect ratio perfect */
+            max-width: 100%;
+            object-fit: contain;
             display: block;
             background-color: white;
             padding: 10px;
@@ -129,11 +124,9 @@
             display: block;
             position: relative;
             overflow: hidden;
-            /* Apply the Pulse Animation */
             animation: pulse-glow 3s infinite ease-in-out;
         }
 
-        /* The Shine Sweep Effect */
         .law-brewing-banner::after {
             content: '';
             position: absolute;
@@ -155,7 +148,6 @@
         }
         
         .law-brewing-banner p { color: #ccc; font-size: 1.1rem; letter-spacing: 1px; }
-
 
         /* --- DRINK MENU STYLES --- */
         .menu-category { margin-bottom: 50px; }
@@ -180,11 +172,28 @@
             padding: 20px;
             border-radius: 0 10px 10px 0;
             transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         
         .drink-card:hover { transform: translateX(10px); background: rgba(255, 182, 18, 0.1); }
         .drink-name { font-size: 1.4rem; font-weight: bold; color: white; margin-bottom: 5px; }
-        .drink-desc { font-size: 1rem; color: #aaa; font-style: italic; }
+        .drink-desc { font-size: 1rem; color: #aaa; font-style: italic; margin-bottom: 10px; }
+        
+        /* New Style for "Suggested Shot" */
+        .suggested-shot {
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(255, 182, 18, 0.15);
+            border: 1px solid var(--packer-gold);
+            color: var(--packer-gold);
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 4px;
+            text-align: center;
+        }
 
         /* --- RUMBLE STYLES --- */
         .rumble-section { background-color: rgba(0, 0, 0, 0.6); border: 5px solid var(--packer-gold); border-radius: 20px; padding: 40px; text-align: center; }
@@ -219,7 +228,6 @@
 
         @media (max-width: 900px) {
              .main-header { padding: 20px; flex-direction: column; text-align: center; }
-             /* Allow logo to shrink on mobile if needed */
              .logo-img { max-height: 200px; } 
              .header-title { font-size: 3rem; }
              .logo-container { flex-direction: column; gap: 15px; }
@@ -249,24 +257,10 @@
                 <p>Click here for Live Tap List & Brewery Games</p>
             </a>
 
-            <div class="menu-category">
-                <h3 class="category-title">Signature Cocktails</h3>
-                <div id="list-cocktails" class="menu-grid">
-                    <div style="color:#aaa;">Loading Menu...</div>
-                </div>
+            <div id="dynamic-menu-container">
+                <div style="text-align:center; color:#888; font-style:italic;">Loading Menu from Bar...</div>
             </div>
 
-            <div class="menu-category">
-                <h3 class="category-title">Bottles & Cans</h3>
-                <div id="list-beer" class="menu-grid">
-                    </div>
-            </div>
-
-            <div class="menu-category">
-                <h3 class="category-title">Spirits</h3>
-                <div id="list-spirits" class="menu-grid">
-                    </div>
-            </div>
         </div>
 
         <div id="view-rumble" class="view-section">
@@ -304,10 +298,10 @@
     </div>
 
     <script>
-        // --- 1. CONFIGURATION (PASTE YOUR SHEET LINK HERE) ---
-        const MENU_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRHD6zTvSE5HfErbLPAHhb0NyXDLuvt_cpOEQxr76BFNpN-KgbL3y68LIogt1aEhVAxIP4JU9t1Kte1/pub?gid=0&single=true&output=csv";
+        // --- 1. CONFIGURATION ---
+        const MENU_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREewsVa0iUjwwA2x4dspHtSLp40KAw5cpS-ycsjQEKjRbxydLTpRynTAvlkMK3S1ue9LXi-L3hKxLD/pub?output=csv";
 
-        // --- 2. MENU LOGIC ---
+        // --- 2. MENU LOGIC (SMART BUCKETS) ---
         function parseCSV(data) {
             const result = []; let row = []; let col = ''; let inQuotes = false;
             for (let i = 0; i < data.length; i++) {
@@ -328,44 +322,76 @@
                 const text = await res.text();
                 const rows = parseCSV(text);
 
-                // Clear lists
-                document.getElementById('list-cocktails').innerHTML = '';
-                document.getElementById('list-beer').innerHTML = '';
-                document.getElementById('list-spirits').innerHTML = '';
+                // Container
+                const container = document.getElementById('dynamic-menu-container');
+                container.innerHTML = ''; 
 
-                let hasItems = false;
+                // Smart Grouping
+                // Expected Columns: Name [0], Style [1], Description [2], Shot [3]
+                let menuGroups = {};
+                let styleOrder = []; // To keep order based on sheet appearance
+
                 rows.forEach((row, i) => {
-                    if (i === 0) return; // Skip header
-                    const category = (row[0] || "").trim().toLowerCase();
-                    const name = (row[1] || "").trim();
+                    if (i === 0) return; // Skip Header
+                    
+                    const name = (row[0] || "").trim();
+                    const style = (row[1] || "Other").trim(); // The Bucket Name
                     const desc = (row[2] || "").trim();
-                    const available = (row[3] || "").trim().toLowerCase();
+                    const shot = (row[3] || "").trim(); // Suggested Shot
 
-                    if (available !== 'true') return;
-                    hasItems = true;
+                    if (!name) return; // Skip empty rows
 
-                    const cardHTML = `
-                        <div class="drink-card">
-                            <div class="drink-name">${name}</div>
-                            <div class="drink-desc">${desc}</div>
-                        </div>
-                    `;
-
-                    if (category.includes('cocktail')) {
-                        document.getElementById('list-cocktails').innerHTML += cardHTML;
-                    } else if (category.includes('beer') || category.includes('bottle')) {
-                        document.getElementById('list-beer').innerHTML += cardHTML;
-                    } else if (category.includes('spirit') || category.includes('liquor')) {
-                        document.getElementById('list-spirits').innerHTML += cardHTML;
+                    // Initialize bucket if new
+                    if (!menuGroups[style]) {
+                        menuGroups[style] = [];
+                        styleOrder.push(style);
                     }
+
+                    menuGroups[style].push({ name, desc, shot });
                 });
 
-                if(!hasItems) {
-                     document.getElementById('list-cocktails').innerHTML = '<div style="color:#aaa">No items found. Check Google Sheet.</div>';
+                // Render Buckets
+                if (styleOrder.length === 0) {
+                    container.innerHTML = '<div style="text-align:center; color:#aaa;">No items found in menu sheet.</div>';
+                    return;
                 }
+
+                styleOrder.forEach(styleName => {
+                    // 1. Create Header
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'menu-category';
+                    
+                    categoryDiv.innerHTML = `<h3 class="category-title">${styleName}</h3>`;
+                    
+                    // 2. Create Grid
+                    const gridDiv = document.createElement('div');
+                    gridDiv.className = 'menu-grid';
+
+                    // 3. Create Cards
+                    menuGroups[styleName].forEach(item => {
+                        let shotHTML = '';
+                        if (item.shot) {
+                            shotHTML = `<div class="suggested-shot">🥃 Shot: ${item.shot}</div>`;
+                        }
+
+                        gridDiv.innerHTML += `
+                            <div class="drink-card">
+                                <div>
+                                    <div class="drink-name">${item.name}</div>
+                                    <div class="drink-desc">${item.desc}</div>
+                                </div>
+                                ${shotHTML}
+                            </div>
+                        `;
+                    });
+
+                    categoryDiv.appendChild(gridDiv);
+                    container.appendChild(categoryDiv);
+                });
 
             } catch (e) {
                 console.error("Menu Load Error", e);
+                document.getElementById('dynamic-menu-container').innerHTML = '<div style="color:red; text-align:center;">Error loading menu.</div>';
             }
         }
 
