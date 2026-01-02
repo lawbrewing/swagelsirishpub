@@ -22,7 +22,7 @@
             background-image: linear-gradient(to bottom, #203731, #0e1a17);
             color: var(--cream-text);
             line-height: 1.6;
-            padding-bottom: 50px;
+            padding-bottom: 100px; /* Extra room at bottom */
         }
 
         /* --- HEADER --- */
@@ -110,8 +110,8 @@
     </header>
 
     <nav class="nav-tabs">
-        <button id="menuTabBtn" class="tab-btn active" onclick="switchTab('menu')">DRINK MENU</button>
-        <button id="rumbleTabBtn" class="tab-btn" onclick="switchTab('rumble')">RUMBLE POOL</button>
+        <button id="btn-menu" class="tab-btn active" onclick="switchTab('menu')">DRINK MENU</button>
+        <button id="btn-rumble" class="tab-btn" onclick="switchTab('rumble')">RUMBLE POOL</button>
     </nav>
 
     <div class="container">
@@ -127,26 +127,22 @@
         <div id="view-rumble" class="view-section">
             <section class="rumble-section">
                 <div id="display-box">AWAITING SETUP...</div>
-
                 <div id="setupArea">
                     <input type="text" id="playerNameInput" placeholder="PLAYER NAME" onkeypress="if(event.key==='Enter')addPlayer()">
                     <br><button class="action-btn" onclick="addPlayer()">ADD PLAYER</button>
                     <ul id="playerListDisplay" class="setup-list"></ul>
                     <br><button id="startBtn" class="action-btn" style="background:#000; color:gold;" onclick="startDraft()" disabled>LOCK IN & DEAL</button>
                 </div>
-
                 <div id="liveArea" class="hidden">
                     <h3 id="roundTitle">WHO IS ENTRANT #1?</h3>
                     <input type="text" id="wrestlerNameInput" placeholder="WRESTLER NAME" onkeypress="if(event.key==='Enter')revealNext()">
                     <br><button id="revealBtn" class="action-btn" onclick="revealNext()">REVEAL OWNER</button>
                 </div>
-
                 <div id="winnerArea" class="hidden">
                     <h3>🏆 FINAL STEP: WHO WON THE RUMBLE? 🏆</h3>
                     <input type="text" id="finalWinnerInput" placeholder="WINNING WRESTLER" onkeypress="if(event.key==='Enter')declareWinner()">
                     <br><button class="action-btn" onclick="declareWinner()">ANNOUNCE CHAMPION</button>
                 </div>
-
                 <div id="log-container"></div>
                 <button class="action-btn" style="background:#8b0000; color:white; font-size:12px; margin-top:50px;" onclick="hardReset()">ADMIN: RESET ALL</button>
             </section>
@@ -157,8 +153,53 @@
         const MENU_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREewsVa0iUjwwA2x4dspHtSLp40KAw5cpS-ycsjQEKjRbxydLTpRynTAvlkMK3S1ue9LXi-L3hKxLD/pub?output=csv";
         let availableBottles = [];
         let currentTab = 'menu';
-        let lastUserInteraction = 0; // Starts at 0 to trigger immediate scroll
+        let userBusy = false;
+        let busyTimer;
 
+        // --- THE KIOSK ENGINE ---
+        function kioskScroll() {
+            // Only scroll if we are on Menu tab and user is not busy
+            if (currentTab === 'menu' && !userBusy) {
+                const currentScroll = window.pageYOffset;
+                const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+                if (currentScroll >= maxScroll - 5) {
+                    // Loop back to top
+                    userBusy = true; // Pause to show bottom
+                    setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        setTimeout(() => { userBusy = false; }, 2000); // Wait for smooth scroll to finish
+                    }, 5000);
+                } else {
+                    window.scrollBy(0, 1);
+                }
+            }
+            requestAnimationFrame(kioskScroll);
+        }
+
+        // Detect user activity to pause kiosk
+        function setUserBusy() {
+            userBusy = true;
+            clearTimeout(busyTimer);
+            // Resume kiosk after 8 seconds of no activity
+            busyTimer = setTimeout(() => { userBusy = false; }, 8000);
+        }
+
+        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(e => {
+            window.addEventListener(e, setUserBusy);
+        });
+
+        // --- TAB SWITCHING ---
+        function switchTab(t) {
+            currentTab = t;
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${t}`).classList.add('active');
+            document.getElementById(`btn-${t}`).classList.add('active');
+            if (t === 'menu') window.scrollTo(0,0);
+        }
+
+        // --- DATA LOADING ---
         function parseCSV(d) {
             const res = []; let r = []; let c = ''; let q = false;
             for (let i=0; i<d.length; i++) {
@@ -172,30 +213,33 @@
         }
 
         async function loadMenu() {
-            const res = await fetch(MENU_SHEET_URL + '&t=' + Date.now());
-            const rows = parseCSV(await res.text());
-            const container = document.getElementById('dynamic-menu-container');
-            container.innerHTML = ''; availableBottles = [];
-            let groups = {}; let order = [];
+            try {
+                const res = await fetch(MENU_SHEET_URL + '&t=' + Date.now());
+                const rows = parseCSV(await res.text());
+                const container = document.getElementById('dynamic-menu-container');
+                container.innerHTML = ''; availableBottles = [];
+                let groups = {}; let order = [];
 
-            rows.forEach((row, i) => {
-                if (i === 0 || !row[0]) return;
-                const [name, style, desc, shot] = [row[0].trim(), row[1].trim(), row[2].trim(), row[3].trim()];
-                availableBottles.push(name);
-                if (!groups[style]) { groups[style]=[]; order.push(style); }
-                groups[style].push({ name, desc, shot });
-            });
-
-            order.forEach(s => {
-                let html = `<h3 class="category-title">${s}</h3><div class="menu-grid">`;
-                groups[s].forEach(item => {
-                    let sHTML = item.shot ? `<div class="suggested-shot">🥃 ${item.shot}</div>` : '';
-                    html += `<div class="drink-card"><div><div class="drink-name">${item.name}</div><div class="drink-desc">${item.desc}</div></div>${sHTML}</div>`;
+                rows.forEach((row, i) => {
+                    if (i === 0 || !row[0]) return;
+                    const [name, style, desc, shot] = [row[0].trim(), row[1].trim(), row[2].trim(), row[3].trim()];
+                    availableBottles.push(name);
+                    if (!groups[style]) { groups[style]=[]; order.push(style); }
+                    groups[style].push({ name, desc, shot });
                 });
-                container.innerHTML += html + '</div>';
-            });
+
+                order.forEach(s => {
+                    let html = `<h3 class="category-title">${s}</h3><div class="menu-grid">`;
+                    groups[s].forEach(item => {
+                        let sHTML = item.shot ? `<div class="suggested-shot">🥃 ${item.shot}</div>` : '';
+                        html += `<div class="drink-card"><div><div class="drink-name">${item.name}</div><div class="drink-desc">${item.desc}</div></div>${sHTML}</div>`;
+                    });
+                    container.innerHTML += html + '</div>';
+                });
+            } catch(e) { console.error(e); }
         }
 
+        // --- RANDOM SHOT ---
         function spinRandomShot() {
             const btn = document.getElementById('randomShotBtn');
             if (!availableBottles.length || btn.classList.contains('spinning')) return;
@@ -205,49 +249,10 @@
                 btn.innerText = availableBottles[Math.floor(Math.random()*availableBottles.length)];
                 if (++count > 20) {
                     clearInterval(int);
-                    btn.innerText = availableBottles[Math.floor(Math.random()*availableBottles.length)];
                     btn.classList.replace('spinning', 'winner');
                 }
             }, 50);
         }
-
-        function switchTab(t) {
-            currentTab = t;
-            document.querySelectorAll('.view-section, .tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(`view-${t}`).classList.add('active');
-            if(t === 'menu') {
-                document.getElementById('menuTabBtn').classList.add('active');
-                window.scrollTo({top: 0, behavior: 'smooth'});
-                lastUserInteraction = Date.now(); // Reset timer on switch
-            } else {
-                document.getElementById('rumbleTabBtn').classList.add('active');
-            }
-        }
-
-        // --- IMPROVED KIOSK AUTO-SCROLL ---
-        function initAutoScroll() {
-            setInterval(() => {
-                // Kick in after 3 seconds of stillness (3000ms)
-                if (currentTab !== 'menu' || (Date.now() - lastUserInteraction < 3000)) return;
-
-                // Check if we hit the bottom
-                if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
-                    lastUserInteraction = Date.now() + 5000; // Pause for 5s at bottom
-                    setTimeout(() => {
-                        window.scrollTo({top: 0, behavior: 'smooth'});
-                    }, 2000);
-                } else {
-                    window.scrollBy(0, 1);
-                }
-            }, 30); // 30ms for a smooth steady crawl
-        }
-
-        // List of events that reset the kiosk timer
-        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(evt => {
-            window.addEventListener(evt, () => { 
-                if(currentTab === 'menu') lastUserInteraction = Date.now(); 
-            });
-        });
 
         // --- RUMBLE ENGINE ---
         let state = localStorage.getItem('rState') || 'SETUP';
@@ -284,12 +289,11 @@
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('liveArea').classList.remove('hidden');
             document.getElementById('roundTitle').innerText = `WHO IS ENTRANT #${revealIdx}?`;
-            document.getElementById('wrestlerNameInput').focus();
         }
 
         function revealNext() {
             const wName = document.getElementById('wrestlerNameInput').value.trim().toUpperCase();
-            if (!wName) return alert("ENTER WRESTLER!");
+            if (!wName) return;
             const display = document.getElementById('display-box');
             const owner = ownership[revealIdx];
             document.getElementById('revealBtn').disabled = true;
@@ -334,22 +338,13 @@
             document.getElementById('winnerArea').classList.add('hidden');
             const box = document.getElementById('display-box');
             box.innerHTML = `<span style="font-size:0.5em; color:white">🏆 CHAMPION: ${realWinner} 🏆</span><br><span style="font-size:0.4em; color:gold;">VICTORY SHOT: ${victoryShot}</span>`;
-            
-            const duration = 15 * 1000;
-            const animationEnd = Date.now() + duration;
-            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 3000 };
-            const interval = setInterval(function() {
-                const timeLeft = animationEnd - Date.now();
-                if (timeLeft <= 0) return clearInterval(interval);
-                const particleCount = 50 * (timeLeft / duration);
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } }));
-            }, 250);
+            confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
         }
 
         function switchToCompleteUI() {
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('liveArea').classList.add('hidden');
-            document.getElementById('display-box').innerHTML = "RUMBLE COMPLETE<br><span style='font-size:0.5em'>CHECK THE LOG BELOW</span>";
+            document.getElementById('display-box').innerHTML = "RUMBLE COMPLETE";
         }
 
         function updateHistoryUI() {
@@ -368,7 +363,7 @@
         window.onload = async () => { 
             await loadMenu(); 
             initRumble(); 
-            initAutoScroll();
+            kioskScroll(); // Start the loop
         };
     </script>
 </body>
