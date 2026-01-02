@@ -10,8 +10,6 @@
             --packer-green: #203731;
             --packer-gold: #ffb612;
             --cream-text: #fdfbf7;
-            /* REVISED GLOW: Added a dark inner shadow so the gold pops on white background */
-            --gold-glow-on-white: drop-shadow(0 0 3px rgba(0,0,0,0.8)) drop-shadow(0 0 20px rgba(255, 182, 18, 1.0));
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,7 +25,7 @@
         /* --- THE HEADER --- */
         .main-header {
             width: 100%;
-            background-color: white; /* White background requested */
+            background-color: white;
             display: flex;
             justify-content: flex-start;
             align-items: center;
@@ -39,20 +37,24 @@
         .logo-container { display: flex; align-items: center; gap: 40px; }
 
         .logo-img {
-            max-height: 300px; /* Big size maintained */
+            max-height: 300px;
             width: auto;
             display: block;
-            /* UPDATED FILTER for white background visibility */
-            filter: var(--gold-glow-on-white);
+            /* --- LOGO FIX: White backing to fill transparent spots --- */
+            background-color: white;
+            padding: 15px; /* Breathing room */
+            border-radius: 50%; /* Makes the white backing a clean circle */
+            /* Apply glow to the white circle container instead of the image filter */
+            box-shadow: 0 0 30px rgba(255, 182, 18, 0.8), 0 0 10px rgba(0,0,0,0.5) inset;
         }
         
         .header-title {
             font-size: 4rem;
-            color: var(--packer-green); /* Changed text to Green for contrast on white */
+            color: var(--packer-green);
             text-transform: uppercase;
             font-weight: 900;
             letter-spacing: 3px;
-            text-shadow: 2px 2px 0 var(--packer-gold); /* Gold shadow for pop */
+            text-shadow: 2px 2px 0 var(--packer-gold);
             white-space: nowrap; 
         }
 
@@ -86,13 +88,26 @@
 
         /* THE BIG REVEAL BOX */
         #display-box {
-            font-size: 40px; /* Reduced size to fit Wrestler Name + Owner Name */
+            font-size: 40px;
             font-family: 'Impact', sans-serif; color: var(--packer-gold);
             background: #000; border: 6px solid var(--packer-gold);
-            width: 95%; margin: 30px auto; min-height: 200px;
+            width: 95%; margin: 30px auto; min-height: 250px;
             display: flex; justify-content: center; align-items: center; flex-direction: column;
             border-radius: 15px; box-shadow: 0 0 30px rgba(255, 182, 18, 0.4);
             text-transform: uppercase; word-break: break-word; padding: 20px; line-height: 1.2;
+            overflow: hidden; /* Contain the slam animation */
+        }
+
+        /* --- NEW DRAMATIC ANIMATION --- */
+        @keyframes dramatic-slam {
+            0% { transform: scale(4); opacity: 0; color: white; text-shadow: 0 0 50px white; }
+            60% { transform: scale(0.9); opacity: 1; color: var(--packer-gold); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .slam-effect {
+            display: inline-block;
+            animation: dramatic-slam 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
         input[type="text"] {
@@ -120,7 +135,7 @@
         .entry-row {
             background: rgba(0,0,0,0.8); margin: 8px 0; padding: 15px;
             border-left: 8px solid var(--packer-gold); display: flex;
-            flex-direction: column; /* Stacked for wrestler name */
+            flex-direction: column;
             font-size: 20px; font-family: sans-serif; gap: 5px;
         }
         .entry-header { font-size: 16px; color: #aaa; }
@@ -133,7 +148,7 @@
              .main-header { padding: 20px; flex-direction: column; }
              .logo-img { max-height: 180px; }
              .header-title { font-size: 2.5rem; white-space: normal; text-align: center; }
-             #display-box { font-size: 30px; }
+             #display-box { font-size: 30px; min-height: 200px; }
         }
     </style>
 </head>
@@ -189,7 +204,6 @@
         let players = JSON.parse(localStorage.getItem('rumblePlayers')) || [];
         let entryOwnership = JSON.parse(localStorage.getItem('rumbleOwnership')) || {}; 
         let currentRevealIndex = parseInt(localStorage.getItem('rumbleRevealIndex')) || 1;
-        // History log now stores wrestler name too
         let historyLog = JSON.parse(localStorage.getItem('rumbleHistoryLog')) || [];
 
         function init() {
@@ -207,9 +221,6 @@
             const input = document.getElementById('playerNameInput');
             const name = input.value.trim().toUpperCase();
             if (!name) return;
-            // Allow duplicate names if they want, or uncomment next line to block
-            // if (players.includes(name)) return alert("Player already added!");
-
             players.push(name);
             localStorage.setItem('rumblePlayers', JSON.stringify(players));
             input.value = '';
@@ -220,7 +231,6 @@
         function updatePlayerListUI() {
             document.getElementById('playerCount').innerText = players.length;
             const list = document.getElementById('playerListDisplay');
-            // Show order because order matters for remainders
             list.innerHTML = players.map((p, i) => `<li>${i+1}. 👤 ${p}</li>`).join('');
         }
 
@@ -236,7 +246,6 @@
             if (players.length === 0) return;
             if (!confirm(`Ready to deal 30 entries to ${players.length} players?`)) return;
 
-            // 1. Shuffle numbers 1-30
             let numbers = Array.from({length: 30}, (_, i) => i + 1);
             for (let i = numbers.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -244,26 +253,18 @@
             }
 
             entryOwnership = {};
-            
-            // 2. Deal them out like cards (First come, first served for extras)
-            // Loop through the 30 shuffled numbers
             for (let i = 0; i < 30; i++) {
-                // Find whose turn it is based on player list order
                 const playerIndex = i % players.length;
-                const playerName = players[playerIndex];
-                const entryNumber = numbers[i];
-                
-                entryOwnership[entryNumber] = playerName;
+                entryOwnership[numbers[i]] = players[playerIndex];
             }
 
-            // 3. Transition
             appState = 'LIVE';
             currentRevealIndex = 1;
             saveData();
             switchToLiveModeUI();
         }
 
-        // --- PHASE 2: LIVE REVEAL (WRESTLER INPUT) ---
+        // --- PHASE 2: LIVE REVEAL (UPDATED DRAMA) ---
         function switchToLiveModeUI() {
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('liveArea').classList.remove('hidden');
@@ -278,12 +279,7 @@
         function revealNext() {
             const wrestlerInput = document.getElementById('wrestlerNameInput');
             const wrestlerName = wrestlerInput.value.trim().toUpperCase();
-            
-            if(!wrestlerName) {
-                alert("ENTER THE WRESTLER'S NAME FIRST!");
-                wrestlerInput.focus();
-                return;
-            }
+            if(!wrestlerName) { alert("ENTER WRESTLER NAME!"); wrestlerInput.focus(); return; }
 
             const btn = document.getElementById('revealBtn');
             const display = document.getElementById('display-box');
@@ -292,40 +288,47 @@
             btn.disabled = true;
             wrestlerInput.disabled = true;
 
-            // Animation Loop shows Wrestler Name vs ????
+            // STAGE 1: THE HYPE (Fast Flicker - 2 seconds)
             let count = 0;
-            const interval = setInterval(() => {
-                display.innerHTML = `${wrestlerName}<br>BELONGS TO...<br>${count % 2 === 0 ? '???' : '...'}`;
-                display.style.color = count % 2 === 0 ? '#fff' : 'var(--packer-gold)';
+            const flickerInterval = setInterval(() => {
+                display.innerHTML = `<span style="color:#fff; font-size:0.8em">${wrestlerName}</span><br>WHO OWNS THEM!?`;
+                display.style.color = count % 2 === 0 ? 'red' : 'var(--packer-gold)';
                 count++;
-                if (count > 15) {
-                    clearInterval(interval);
-                    finalizeReveal(wrestlerName, ownerName);
+                if (count > 25) {
+                    clearInterval(flickerInterval);
+                    // STAGE 2: THE SUSPENSE PAUSE (1.5 seconds)
+                    display.innerHTML = `<span style="color:#fff; font-size:0.8em">${wrestlerName}</span><br>BELONGS TO...<br><span style="font-size:1.5em; color:red;">...</span>`;
+                    setTimeout(() => {
+                        // STAGE 3: THE SLAM REVEAL
+                        finalizeReveal(wrestlerName, ownerName);
+                    }, 1500);
                 }
-            }, 70);
+            }, 60);
         }
 
         function finalizeReveal(wrestlerName, ownerName) {
             const display = document.getElementById('display-box');
-            // Dramatic Final Display
-            display.innerHTML = `<span style="color:#fff; font-size:0.8em">${wrestlerName}</span><br><span style="font-size:0.6em; color:#888;">BELONGS TO</span><br>${ownerName}`;
+            // Dramatic Final Display with animation class
+            display.innerHTML = `
+                <span style="color:#fff; font-size:0.7em">${wrestlerName}</span><br>
+                <span style="font-size:0.5em; color:#888;">BELONGS TO</span><br>
+                <span class="slam-effect">${ownerName}</span>
+            `;
             
             display.style.color = 'var(--packer-gold)';
-            display.style.boxShadow = "0 0 80px #39ff14"; 
-            setTimeout(() => { display.style.boxShadow = "0 0 50px rgba(255, 182, 18, 0.5)"; }, 1500);
+            // Big green flash
+            display.style.boxShadow = "0 0 100px 20px #39ff14"; 
+            setTimeout(() => { display.style.boxShadow = "0 0 30px rgba(255, 182, 18, 0.4)"; }, 2000);
 
-            // Log history with Wrestler info
             historyLog.push({ number: currentRevealIndex, wrestler: wrestlerName, owner: ownerName });
-            
             currentRevealIndex++;
             if (currentRevealIndex > 30) appState = 'COMPLETE';
-            
             saveData();
             updateHistoryUI();
             
-            // Reset input for next round
             document.getElementById('wrestlerNameInput').value = '';
-            updateRevealInputState();
+            // Slight delay before unlocking controls to let animation finish
+            setTimeout(updateRevealInputState, 2000);
         }
 
         function updateRevealInputState() {
@@ -333,20 +336,19 @@
              const input = document.getElementById('wrestlerNameInput');
              const nextNumSpan = document.getElementById('nextEntryNum');
 
-             btn.disabled = false;
-             input.disabled = false;
-             input.focus();
-
              if (appState === 'COMPLETE') {
                  switchToCompleteUI();
              } else {
+                 btn.disabled = false;
+                 input.disabled = false;
+                 input.focus();
                  nextNumSpan.innerText = currentRevealIndex;
              }
         }
 
         function switchToCompleteUI() {
              document.getElementById('liveArea').classList.add('hidden');
-             document.getElementById('display-box').innerHTML = "RUMBLE<br>COMPLETE";
+             document.getElementById('display-box').innerHTML = "<span class="slam-effect">RUMBLE<br>COMPLETE</span>";
              document.getElementById('display-box').style.color = "var(--packer-gold)";
         }
 
