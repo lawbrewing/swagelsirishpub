@@ -98,27 +98,21 @@
             text-shadow: 0 0 10px rgba(255, 182, 18, 0.5);
         }
 
-        /* --- CONTENT CONTAINERS --- */
+        /* --- CONTAINER --- */
         .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
         .view-section { display: none; }
         .view-section.active { display: block; animation: fadeIn 0.5s; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- GLOWING LAW BREWING BUTTON --- */
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 10px var(--packer-gold); border-color: var(--packer-gold); }
-            50% { box-shadow: 0 0 30px var(--packer-gold), 0 0 60px rgba(255, 182, 18, 0.6); border-color: #fff; }
-            100% { box-shadow: 0 0 10px var(--packer-gold); border-color: var(--packer-gold); }
-        }
-
+        /* --- BUTTONS --- */
         .law-brewing-banner {
             background: linear-gradient(135deg, #1a1a1a, #000);
             border: 2px solid var(--packer-gold);
             padding: 35px;
             text-align: center;
             border-radius: 8px;
-            margin-bottom: 50px;
+            margin-bottom: 20px;
             cursor: pointer;
             text-decoration: none;
             display: block;
@@ -127,27 +121,30 @@
             animation: pulse-glow 3s infinite ease-in-out;
         }
 
-        .law-brewing-banner::after {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 182, 18, 0.2), transparent);
-            transition: 0.5s;
-        }
-
-        .law-brewing-banner:hover::after { left: 100%; }
-
-        .law-brewing-banner h2 { 
-            color: var(--packer-gold); 
-            font-size: 2.2rem; 
-            margin-bottom: 10px; 
-            font-family: 'Verdana', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        
+        .law-brewing-banner h2 { color: var(--packer-gold); font-size: 2.2rem; margin-bottom: 10px; font-family: 'Verdana', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
         .law-brewing-banner p { color: #ccc; font-size: 1.1rem; letter-spacing: 1px; }
+
+        /* RANDOM SHOT BUTTON */
+        .random-shot-btn {
+            background: var(--packer-gold);
+            color: var(--packer-green);
+            width: 100%;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .random-shot-btn:hover { transform: scale(1.02); background: #ffe082; }
 
         /* --- DRINK MENU STYLES --- */
         .menu-category { margin-bottom: 50px; }
@@ -175,15 +172,16 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            min-height: 120px;
         }
         
         .drink-card:hover { transform: translateX(10px); background: rgba(255, 182, 18, 0.1); }
-        .drink-name { font-size: 1.4rem; font-weight: bold; color: white; margin-bottom: 5px; }
-        .drink-desc { font-size: 1rem; color: #aaa; font-style: italic; margin-bottom: 10px; }
-        
-        /* New Style for "Suggested Shot" */
+        .drink-name { font-size: 1.4rem; font-weight: bold; color: white; margin-bottom: 5px; line-height: 1.2; }
+        .drink-desc { font-size: 1rem; color: #aaa; font-style: italic; margin-bottom: 15px; }
+
+        /* Badge for Suggested Shot */
         .suggested-shot {
-            margin-top: 10px;
+            margin-top: auto; 
             padding: 8px;
             background: rgba(255, 182, 18, 0.15);
             border: 1px solid var(--packer-gold);
@@ -195,30 +193,32 @@
             text-align: center;
         }
 
+        /* --- OVERLAY FOR RANDOM SHOT --- */
+        #shot-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 2000;
+            display: none; justify-content: center; align-items: center; flex-direction: column;
+        }
+        #shot-result-box {
+            text-align: center; padding: 40px; border: 6px solid var(--packer-gold);
+            border-radius: 20px; background: #111; max-width: 90%;
+        }
+        #shot-result-title { color: #fff; font-size: 1.5rem; margin-bottom: 20px; text-transform: uppercase; }
+        #shot-result-name { color: var(--packer-gold); font-size: 3rem; font-family: 'Impact', sans-serif; line-height: 1.1; margin-bottom: 10px; }
+        #shot-result-desc { color: #aaa; font-size: 1.2rem; font-style: italic; }
+        .close-overlay-btn { margin-top: 30px; padding: 10px 30px; background: #333; color: white; border: 1px solid white; font-size: 1rem; cursor: pointer; text-transform: uppercase; }
+
         /* --- RUMBLE STYLES --- */
         .rumble-section { background-color: rgba(0, 0, 0, 0.6); border: 5px solid var(--packer-gold); border-radius: 20px; padding: 40px; text-align: center; }
-        
-        #display-box { 
-            font-size: 40px; font-family: 'Impact', sans-serif; color: var(--packer-gold); 
-            background: #000; border: 6px solid var(--packer-gold); width: 95%; margin: 30px auto; 
-            min-height: 250px; display: flex; justify-content: center; align-items: center; 
-            flex-direction: column; border-radius: 15px; 
-            box-shadow: 0 0 30px rgba(255, 182, 18, 0.4); 
-            text-transform: uppercase; word-break: break-word; padding: 20px; line-height: 1.2; overflow: hidden; 
-        }
-        
+        #display-box { font-size: 40px; font-family: 'Impact', sans-serif; color: var(--packer-gold); background: #000; border: 6px solid var(--packer-gold); width: 95%; margin: 30px auto; min-height: 250px; display: flex; justify-content: center; align-items: center; flex-direction: column; border-radius: 15px; box-shadow: 0 0 30px rgba(255, 182, 18, 0.4); text-transform: uppercase; word-break: break-word; padding: 20px; line-height: 1.2; overflow: hidden; }
         @keyframes dramatic-slam { 0% { transform: scale(4); opacity: 0; color: white; text-shadow: 0 0 50px white; } 60% { transform: scale(0.9); opacity: 1; color: var(--packer-gold); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
         .slam-effect { display: inline-block; animation: dramatic-slam 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-        
         input[type="text"] { font-size: 24px; padding: 15px; width: 80%; max-width: 500px; border: 3px solid var(--packer-gold); background: #fff; color: #000; text-transform: uppercase; text-align: center; font-weight: bold; margin-bottom: 20px; }
-        
         .action-btn { background: var(--packer-gold); color: var(--packer-green); font-size: 24px; font-weight: bold; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; margin: 10px; transition: 0.3s; }
         .action-btn:hover { background-color: #ffe082; transform: scale(1.05); }
         .action-btn:disabled { background: #555; color: #888; cursor: not-allowed; }
-        
         .setup-list { text-align: left; display: inline-block; margin: 20px auto; max-height: 300px; overflow-y:auto; border: 1px solid #444; padding: 10px; width: 80%;}
         .setup-list li { font-size: 1.1rem; margin-bottom: 5px; color: var(--packer-gold); border-bottom: 1px solid #333; list-style-type: decimal; }
-        
         .hidden { display: none; }
         #log-container { margin-top: 40px; text-align: left; border-top: 4px solid var(--packer-gold); padding-top: 20px; max-height: 600px; overflow-y: auto; }
         .entry-row { background: rgba(0,0,0,0.8); margin: 8px 0; padding: 15px; border-left: 8px solid var(--packer-gold); display: flex; flex-direction: column; gap: 5px; }
@@ -232,9 +232,23 @@
              .header-title { font-size: 3rem; }
              .logo-container { flex-direction: column; gap: 15px; }
         }
+        @keyframes pulse-glow { 
+            0% { box-shadow: 0 0 10px var(--packer-gold); border-color: var(--packer-gold); } 
+            50% { box-shadow: 0 0 30px var(--packer-gold), 0 0 60px rgba(255, 182, 18, 0.6); border-color: #fff; } 
+            100% { box-shadow: 0 0 10px var(--packer-gold); border-color: var(--packer-gold); } 
+        }
     </style>
 </head>
 <body>
+
+    <div id="shot-overlay" onclick="closeShotOverlay()">
+        <div id="shot-result-box" onclick="event.stopPropagation()">
+            <div id="shot-result-title">Tonight's Shot Is...</div>
+            <div id="shot-result-name">SPINNING...</div>
+            <div id="shot-result-desc">...</div>
+            <button class="close-overlay-btn" onclick="closeShotOverlay()">CLOSE</button>
+        </div>
+    </div>
 
     <header class="main-header">
         <div class="logo-container">
@@ -256,6 +270,10 @@
                 <h2>VISIT LAW BREWING</h2>
                 <p>Click here for Live Tap List & Brewery Games</p>
             </a>
+
+            <button class="random-shot-btn" onclick="spinRandomShot()">
+                🎲 Spin for a Shot
+            </button>
 
             <div id="dynamic-menu-container">
                 <div style="text-align:center; color:#888; font-style:italic;">Loading Menu from Bar...</div>
@@ -301,7 +319,9 @@
         // --- 1. CONFIGURATION ---
         const MENU_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREewsVa0iUjwwA2x4dspHtSLp40KAw5cpS-ycsjQEKjRbxydLTpRynTAvlkMK3S1ue9LXi-L3hKxLD/pub?output=csv";
 
-        // --- 2. MENU LOGIC (SMART BUCKETS) ---
+        let availableShots = []; // Store potential shots for randomizer
+
+        // --- 2. MENU LOGIC ---
         function parseCSV(data) {
             const result = []; let row = []; let col = ''; let inQuotes = false;
             for (let i = 0; i < data.length; i++) {
@@ -322,56 +342,53 @@
                 const text = await res.text();
                 const rows = parseCSV(text);
 
-                // Container
                 const container = document.getElementById('dynamic-menu-container');
                 container.innerHTML = ''; 
+                availableShots = []; // Reset randomizer pool
 
-                // Smart Grouping
-                // Expected Columns: Name [0], Style [1], Description [2], Shot [3]
                 let menuGroups = {};
-                let styleOrder = []; // To keep order based on sheet appearance
+                let styleOrder = [];
 
                 rows.forEach((row, i) => {
                     if (i === 0) return; // Skip Header
                     
                     const name = (row[0] || "").trim();
-                    const style = (row[1] || "Other").trim(); // The Bucket Name
+                    const style = (row[1] || "Other").trim(); 
                     const desc = (row[2] || "").trim();
-                    const shot = (row[3] || "").trim(); // Suggested Shot
+                    const shot = (row[3] || "").trim(); 
 
-                    if (!name) return; // Skip empty rows
+                    if (!name) return; 
 
-                    // Initialize bucket if new
+                    // Add to randomizer pool if shot exists
+                    if (shot) {
+                        availableShots.push({ name: name, shotDesc: shot });
+                    }
+
                     if (!menuGroups[style]) {
                         menuGroups[style] = [];
                         styleOrder.push(style);
                     }
-
                     menuGroups[style].push({ name, desc, shot });
                 });
 
-                // Render Buckets
                 if (styleOrder.length === 0) {
                     container.innerHTML = '<div style="text-align:center; color:#aaa;">No items found in menu sheet.</div>';
                     return;
                 }
 
                 styleOrder.forEach(styleName => {
-                    // 1. Create Header
                     const categoryDiv = document.createElement('div');
                     categoryDiv.className = 'menu-category';
-                    
                     categoryDiv.innerHTML = `<h3 class="category-title">${styleName}</h3>`;
                     
-                    // 2. Create Grid
                     const gridDiv = document.createElement('div');
                     gridDiv.className = 'menu-grid';
 
-                    // 3. Create Cards
                     menuGroups[styleName].forEach(item => {
                         let shotHTML = '';
                         if (item.shot) {
-                            shotHTML = `<div class="suggested-shot">🥃 Shot: ${item.shot}</div>`;
+                            // "Shot:" removed, just Icon + Text
+                            shotHTML = `<div class="suggested-shot">🥃 ${item.shot}</div>`;
                         }
 
                         gridDiv.innerHTML += `
@@ -391,11 +408,53 @@
 
             } catch (e) {
                 console.error("Menu Load Error", e);
-                document.getElementById('dynamic-menu-container').innerHTML = '<div style="color:red; text-align:center;">Error loading menu.</div>';
+                container.innerHTML = '<div style="color:red; text-align:center;">Error loading menu.</div>';
             }
         }
 
-        // --- 3. TAB LOGIC ---
+        // --- 3. RANDOM SHOT LOGIC ---
+        function spinRandomShot() {
+            if (availableShots.length === 0) {
+                alert("No suggested shots found on the menu!");
+                return;
+            }
+
+            const overlay = document.getElementById('shot-overlay');
+            const nameEl = document.getElementById('shot-result-name');
+            const descEl = document.getElementById('shot-result-desc');
+            
+            overlay.style.display = 'flex'; // Show overlay
+            
+            // Animation Loop
+            let count = 0;
+            let maxCount = 20;
+            let speed = 50;
+            
+            const interval = setInterval(() => {
+                // Pick random index
+                const r = Math.floor(Math.random() * availableShots.length);
+                nameEl.innerText = availableShots[r].shotDesc;
+                descEl.innerText = "using " + availableShots[r].name;
+                nameEl.style.color = count % 2 === 0 ? '#fff' : 'var(--packer-gold)';
+                count++;
+
+                if (count > maxCount) {
+                    clearInterval(interval);
+                    // Final Pick
+                    const winner = availableShots[Math.floor(Math.random() * availableShots.length)];
+                    nameEl.innerText = winner.shotDesc;
+                    nameEl.style.color = 'var(--packer-gold)';
+                    descEl.innerText = "Order the " + winner.name;
+                    nameEl.style.textShadow = "0 0 20px var(--packer-gold)";
+                }
+            }, speed);
+        }
+
+        function closeShotOverlay() {
+            document.getElementById('shot-overlay').style.display = 'none';
+        }
+
+        // --- 4. TAB LOGIC ---
         function switchTab(tab) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -404,7 +463,7 @@
             if (tab === 'menu') buttons[0].classList.add('active'); else buttons[1].classList.add('active');
         }
 
-        // --- 4. RUMBLE LOGIC ---
+        // --- 5. RUMBLE LOGIC ---
         let rumbleState = localStorage.getItem('rumbleState') || 'SETUP';
         let rumblePlayers = JSON.parse(localStorage.getItem('rumblePlayers')) || [];
         let rumbleOwnership = JSON.parse(localStorage.getItem('rumbleOwnership')) || {}; 
