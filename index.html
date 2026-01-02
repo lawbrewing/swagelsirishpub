@@ -22,7 +22,7 @@
             background-image: linear-gradient(to bottom, #203731, #0e1a17);
             color: var(--cream-text);
             line-height: 1.6;
-            padding-bottom: 100px; /* Extra room at bottom */
+            padding-bottom: 200px; /* Massive padding to ensure there is room to scroll */
         }
 
         /* --- HEADER --- */
@@ -59,7 +59,7 @@
         .view-section.active { display: block; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- BANNER & RANDOM SHOT BUTTON --- */
+        /* --- BUTTONS --- */
         .law-brewing-banner { background: linear-gradient(135deg, #1a1a1a, #000); border: 2px solid var(--packer-gold); padding: 35px; text-align: center; border-radius: 8px; margin-bottom: 20px; cursor: pointer; text-decoration: none; display: block; overflow: hidden; animation: pulse-glow 3s infinite ease-in-out; }
         .law-brewing-banner h2 { color: var(--packer-gold); font-size: 2.2rem; margin-bottom: 10px; text-transform: uppercase; }
         .law-brewing-banner p { color: #ccc; }
@@ -153,53 +153,58 @@
         const MENU_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREewsVa0iUjwwA2x4dspHtSLp40KAw5cpS-ycsjQEKjRbxydLTpRynTAvlkMK3S1ue9LXi-L3hKxLD/pub?output=csv";
         let availableBottles = [];
         let currentTab = 'menu';
-        let userBusy = false;
-        let busyTimer;
+        let userInteracting = false;
+        let interactionTimer;
 
-        // --- THE KIOSK ENGINE ---
-        function kioskScroll() {
-            // Only scroll if we are on Menu tab and user is not busy
-            if (currentTab === 'menu' && !userBusy) {
-                const currentScroll = window.pageYOffset;
-                const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        // --- THE NEW FORCE-SCROLL ENGINE ---
+        function startKiosk() {
+            setInterval(() => {
+                // If on Rumble tab or someone touched the screen recently, skip.
+                if (currentTab !== 'menu' || userInteracting) return;
 
-                if (currentScroll >= maxScroll - 5) {
-                    // Loop back to top
-                    userBusy = true; // Pause to show bottom
+                let startY = window.pageYOffset;
+                window.scrollBy(0, 1); // Move 1 pixel down
+                let endY = window.pageYOffset;
+
+                // If endY is the same as startY, we hit the bottom
+                if (startY === endY && startY > 100) {
+                    userInteracting = true; // Pause
                     setTimeout(() => {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
-                        setTimeout(() => { userBusy = false; }, 2000); // Wait for smooth scroll to finish
+                        setTimeout(() => { userInteracting = false; }, 2000);
                     }, 5000);
-                } else {
-                    window.scrollBy(0, 1);
                 }
-            }
-            requestAnimationFrame(kioskScroll);
+            }, 40); // 40ms = smooth steady speed
         }
 
-        // Detect user activity to pause kiosk
-        function setUserBusy() {
-            userBusy = true;
-            clearTimeout(busyTimer);
-            // Resume kiosk after 8 seconds of no activity
-            busyTimer = setTimeout(() => { userBusy = false; }, 8000);
+        // Global activity listener
+        function handleInteraction() {
+            userInteracting = true;
+            clearTimeout(interactionTimer);
+            interactionTimer = setTimeout(() => {
+                userInteracting = false;
+            }, 8000); // Resume after 8 seconds of stillness
         }
 
-        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(e => {
-            window.addEventListener(e, setUserBusy);
-        });
+        window.addEventListener('mousedown', handleInteraction);
+        window.addEventListener('mousemove', handleInteraction);
+        window.addEventListener('touchstart', handleInteraction);
+        window.addEventListener('keypress', handleInteraction);
 
-        // --- TAB SWITCHING ---
         function switchTab(t) {
             currentTab = t;
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(`view-${t}`).classList.add('active');
             document.getElementById(`btn-${t}`).classList.add('active');
-            if (t === 'menu') window.scrollTo(0,0);
+            if (t === 'menu') {
+                window.scrollTo(0,0);
+                userInteracting = false;
+            } else {
+                userInteracting = true; // Freeze scroll on Rumble tab
+            }
         }
 
-        // --- DATA LOADING ---
         function parseCSV(d) {
             const res = []; let r = []; let c = ''; let q = false;
             for (let i=0; i<d.length; i++) {
@@ -213,33 +218,30 @@
         }
 
         async function loadMenu() {
-            try {
-                const res = await fetch(MENU_SHEET_URL + '&t=' + Date.now());
-                const rows = parseCSV(await res.text());
-                const container = document.getElementById('dynamic-menu-container');
-                container.innerHTML = ''; availableBottles = [];
-                let groups = {}; let order = [];
+            const res = await fetch(MENU_SHEET_URL + '&t=' + Date.now());
+            const rows = parseCSV(await res.text());
+            const container = document.getElementById('dynamic-menu-container');
+            container.innerHTML = ''; availableBottles = [];
+            let groups = {}; let order = [];
 
-                rows.forEach((row, i) => {
-                    if (i === 0 || !row[0]) return;
-                    const [name, style, desc, shot] = [row[0].trim(), row[1].trim(), row[2].trim(), row[3].trim()];
-                    availableBottles.push(name);
-                    if (!groups[style]) { groups[style]=[]; order.push(style); }
-                    groups[style].push({ name, desc, shot });
-                });
+            rows.forEach((row, i) => {
+                if (i === 0 || !row[0]) return;
+                const [name, style, desc, shot] = [row[0].trim(), row[1].trim(), row[2].trim(), row[3].trim()];
+                availableBottles.push(name);
+                if (!groups[style]) { groups[style]=[]; order.push(style); }
+                groups[style].push({ name, desc, shot });
+            });
 
-                order.forEach(s => {
-                    let html = `<h3 class="category-title">${s}</h3><div class="menu-grid">`;
-                    groups[s].forEach(item => {
-                        let sHTML = item.shot ? `<div class="suggested-shot">🥃 ${item.shot}</div>` : '';
-                        html += `<div class="drink-card"><div><div class="drink-name">${item.name}</div><div class="drink-desc">${item.desc}</div></div>${sHTML}</div>`;
-                    });
-                    container.innerHTML += html + '</div>';
+            order.forEach(s => {
+                let html = `<h3 class="category-title">${s}</h3><div class="menu-grid">`;
+                groups[s].forEach(item => {
+                    let sHTML = item.shot ? `<div class="suggested-shot">🥃 ${item.shot}</div>` : '';
+                    html += `<div class="drink-card"><div><div class="drink-name">${item.name}</div><div class="drink-desc">${item.desc}</div></div>${sHTML}</div>`;
                 });
-            } catch(e) { console.error(e); }
+                container.innerHTML += html + '</div>';
+            });
         }
 
-        // --- RANDOM SHOT ---
         function spinRandomShot() {
             const btn = document.getElementById('randomShotBtn');
             if (!availableBottles.length || btn.classList.contains('spinning')) return;
@@ -249,12 +251,13 @@
                 btn.innerText = availableBottles[Math.floor(Math.random()*availableBottles.length)];
                 if (++count > 20) {
                     clearInterval(int);
+                    btn.innerText = availableBottles[Math.floor(Math.random()*availableBottles.length)];
                     btn.classList.replace('spinning', 'winner');
                 }
             }, 50);
         }
 
-        // --- RUMBLE ENGINE ---
+        // --- RUMBLE LOGIC ---
         let state = localStorage.getItem('rState') || 'SETUP';
         let players = JSON.parse(localStorage.getItem('rPlayers')) || [];
         let ownership = JSON.parse(localStorage.getItem('rOwn')) || {}; 
@@ -275,7 +278,6 @@
             document.getElementById('playerNameInput').value = '';
             updatePlayerListUI(); document.getElementById('startBtn').disabled = !players.length;
         }
-
         function updatePlayerListUI() { document.getElementById('playerListDisplay').innerHTML = players.map(p => `<li>${p}</li>`).join(''); }
 
         function startDraft() {
@@ -293,7 +295,7 @@
 
         function revealNext() {
             const wName = document.getElementById('wrestlerNameInput').value.trim().toUpperCase();
-            if (!wName) return;
+            if (!wName) return alert("ENTER WRESTLER!");
             const display = document.getElementById('display-box');
             const owner = ownership[revealIdx];
             document.getElementById('revealBtn').disabled = true;
@@ -320,20 +322,12 @@
             }, 60);
         }
 
-        function switchToWinner() {
-            document.getElementById('liveArea').classList.add('hidden');
-            document.getElementById('winnerArea').classList.remove('hidden');
-            document.getElementById('display-box').innerText = "THE DRAFT IS OVER. WHO WON?";
-        }
-
         function declareWinner() {
             const winningWrestler = document.getElementById('finalWinnerInput').value.trim().toUpperCase();
             const winningEntry = history.find(h => h.w === winningWrestler);
-            if (!winningEntry) return alert("Wrestler not found in entries!");
-
+            if (!winningEntry) return alert("Wrestler not found!");
             const realWinner = winningEntry.o;
             const victoryShot = availableBottles[Math.floor(Math.random()*availableBottles.length)] || "THE HOUSE SPECIAL";
-            
             state = 'COMPLETE'; save();
             document.getElementById('winnerArea').classList.add('hidden');
             const box = document.getElementById('display-box');
@@ -341,29 +335,16 @@
             confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
         }
 
-        function switchToCompleteUI() {
-            document.getElementById('setupArea').classList.add('hidden');
-            document.getElementById('liveArea').classList.add('hidden');
-            document.getElementById('display-box').innerHTML = "RUMBLE COMPLETE";
-        }
-
-        function updateHistoryUI() {
-            document.getElementById('log-container').innerHTML = history.slice().reverse().map(h => 
-                `<div class="entry-row"><div style="font-size:12px; color:#aaa">#${h.n}</div><div>${h.w} &rarr; <span class="entry-owner-highlight">${h.o}</span></div></div>`
-            ).join('');
-        }
-
-        function save() {
-            localStorage.setItem('rState', state); localStorage.setItem('rOwn', JSON.stringify(ownership));
-            localStorage.setItem('rIdx', revealIdx); localStorage.setItem('rHist', JSON.stringify(history));
-        }
-
+        function switchToWinner() { document.getElementById('liveArea').classList.add('hidden'); document.getElementById('winnerArea').classList.remove('hidden'); document.getElementById('display-box').innerText = "THE DRAFT IS OVER. WHO WON?"; }
+        function switchToCompleteUI() { document.getElementById('setupArea').classList.add('hidden'); document.getElementById('liveArea').classList.add('hidden'); document.getElementById('display-box').innerHTML = "RUMBLE COMPLETE"; }
+        function updateHistoryUI() { document.getElementById('log-container').innerHTML = history.slice().reverse().map(h => `<div class="entry-row"><div style="font-size:12px; color:#aaa">#${h.n}</div><div>${h.w} &rarr; <span class="entry-owner-highlight">${h.o}</span></div></div>`).join(''); }
+        function save() { localStorage.setItem('rState', state); localStorage.setItem('rOwn', JSON.stringify(ownership)); localStorage.setItem('rIdx', revealIdx); localStorage.setItem('rHist', JSON.stringify(history)); }
         function hardReset() { if(confirm("RESET ALL?")) { localStorage.clear(); location.reload(); } }
 
         window.onload = async () => { 
             await loadMenu(); 
             initRumble(); 
-            kioskScroll(); // Start the loop
+            startKiosk(); // Start the force-scroll loop
         };
     </script>
 </body>
