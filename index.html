@@ -156,6 +156,8 @@
     <script>
         const MENU_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREewsVa0iUjwwA2x4dspHtSLp40KAw5cpS-ycsjQEKjRbxydLTpRynTAvlkMK3S1ue9LXi-L3hKxLD/pub?output=csv";
         let availableBottles = [];
+        let currentTab = 'menu';
+        let lastUserInteraction = Date.now();
 
         function parseCSV(d) {
             const res = []; let r = []; let c = ''; let q = false;
@@ -209,10 +211,33 @@
             }, 50);
         }
 
+        // --- KIOSK AUTO-SCROLL LOGIC ---
+        function initAutoScroll() {
+            setInterval(() => {
+                // Only scroll if we are on the Menu and no one has touched the screen for 10 seconds
+                if (currentTab !== 'menu' || (Date.now() - lastUserInteraction < 10000)) return;
+
+                if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 2)) {
+                    // At bottom? Wait 5 seconds then snap back to top
+                    setTimeout(() => { window.scrollTo({top: 0, behavior: 'smooth'}); }, 5000);
+                    lastUserInteraction = Date.now() + 5000; // Delay next scroll
+                } else {
+                    window.scrollBy(0, 1);
+                }
+            }, 40); // Controls scroll speed
+        }
+
+        // Reset the "idle" timer on any user movement
+        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(evt => {
+            window.addEventListener(evt, () => { lastUserInteraction = Date.now(); });
+        });
+
         function switchTab(t) {
+            currentTab = t;
             document.querySelectorAll('.view-section, .tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(`view-${t}`).classList.add('active');
             event.currentTarget.classList.add('active');
+            if (t === 'menu') window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
         // --- RUMBLE ENGINE ---
@@ -332,7 +357,7 @@
 
         function hardReset() { if(confirm("RESET ALL?")) { localStorage.clear(); location.reload(); } }
 
-        window.onload = () => { loadMenu(); initRumble(); };
+        window.onload = () => { loadMenu(); initRumble(); initAutoScroll(); };
     </script>
 </body>
 </html>
