@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Swagel's Irish Pub & Rumble Pool</title>
+    <title>Swagel's Irish Pub</title>
     <style>
         /* --- GLOBAL VARIABLES (Packers / Irish Theme) --- */
         :root {
             --packer-green: #203731;
             --packer-gold: #ffb612;
             --cream-text: #fdfbf7;
+            --menu-bg: rgba(0, 0, 0, 0.4);
+            --card-bg: rgba(255, 255, 255, 0.05);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,72 +22,140 @@
             background-image: linear-gradient(to bottom, #203731, #0e1a17);
             color: var(--cream-text);
             line-height: 1.6;
+            padding-bottom: 50px;
         }
 
-        /* --- THE HEADER --- */
+        /* --- HEADER --- */
         .main-header {
             width: 100%;
             background-color: white;
             display: flex;
             justify-content: flex-start;
             align-items: center;
-            padding: 30px 40px;
-            border-bottom: 10px solid var(--packer-gold);
+            padding: 20px 40px;
+            border-bottom: 8px solid var(--packer-gold);
             box-shadow: 0 0 50px rgba(0,0,0,0.7);
         }
 
-        .logo-container { display: flex; align-items: center; gap: 40px; }
+        .logo-container { display: flex; align-items: center; gap: 30px; }
 
         .logo-img {
-            max-height: 300px;
+            max-height: 180px; /* Good size for menu header */
             width: auto;
             display: block;
-            /* --- LOGO FIX: Tighter white backing --- */
             background-color: white;
-            padding: 5px; /* Reduced from 15px to 5px */
-            border-radius: 50%; 
-            box-shadow: 0 0 30px rgba(255, 182, 18, 0.8), 0 0 10px rgba(0,0,0,0.5) inset;
+            padding: 5px;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 182, 18, 0.8), 0 0 10px rgba(0,0,0,0.5) inset;
         }
         
         .header-title {
-            font-size: 4rem;
+            font-size: 3.5rem;
             color: var(--packer-green);
             text-transform: uppercase;
             font-weight: 900;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             text-shadow: 2px 2px 0 var(--packer-gold);
-            white-space: nowrap; 
+            line-height: 1;
         }
 
-        /* --- MAIN CONTAINER --- */
-        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px 100px 20px; }
-
-        .law-link-container { text-align: center; margin-bottom: 40px; }
-        .law-link {
-            background-color: #000; color: var(--packer-gold); border: 3px solid var(--packer-gold);
-            font-family: 'Verdana', sans-serif; font-weight: bold; font-size: 1.3rem;
-            padding: 15px 40px; border-radius: 8px; text-decoration: none;
-            text-transform: uppercase; letter-spacing: 1px; display: inline-block;
-            box-shadow: 0 0 20px rgba(255, 182, 18, 0.3); transition: 0.3s;
+        /* --- NAVIGATION TABS --- */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            background: #000;
+            border-bottom: 2px solid var(--packer-gold);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        .law-link:hover { background-color: var(--packer-gold); color: #000; box-shadow: 0 0 40px var(--packer-gold); }
 
-        /* --- RUMBLE SECTION STYLING --- */
+        .tab-btn {
+            flex: 1;
+            padding: 20px;
+            background: #111;
+            color: #888;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            max-width: 500px;
+            font-family: 'Verdana', sans-serif;
+        }
+
+        .tab-btn:hover { background: #222; color: white; }
+        
+        .tab-btn.active {
+            background: var(--packer-green);
+            color: var(--packer-gold);
+            border-bottom: 6px solid var(--packer-gold);
+        }
+
+        /* --- CONTENT CONTAINERS --- */
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.5s; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- DRINK MENU STYLES --- */
+        .menu-category { margin-bottom: 50px; }
+        .category-title {
+            font-size: 2.5rem;
+            color: var(--packer-gold);
+            border-bottom: 2px solid var(--packer-gold);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            padding-bottom: 10px;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .drink-card {
+            background: var(--card-bg);
+            border-left: 5px solid var(--packer-gold);
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            transition: transform 0.2s;
+        }
+        
+        .drink-card:hover { transform: translateX(10px); background: rgba(255, 182, 18, 0.1); }
+
+        .drink-name { font-size: 1.4rem; font-weight: bold; color: white; margin-bottom: 5px; }
+        .drink-desc { font-size: 1rem; color: #aaa; font-style: italic; }
+
+        .law-brewing-banner {
+            background: #000;
+            border: 4px solid var(--packer-gold);
+            padding: 30px;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            display: block;
+        }
+        .law-brewing-banner:hover { transform: scale(1.02); box-shadow: 0 0 30px var(--packer-gold); }
+        .law-brewing-banner h2 { color: var(--packer-gold); font-size: 2rem; margin-bottom: 10px; }
+        .law-brewing-banner p { color: white; font-size: 1.2rem; }
+
+
+        /* --- RUMBLE STYLES (Preserved) --- */
         .rumble-section {
             background-color: rgba(0, 0, 0, 0.6);
             border: 5px solid var(--packer-gold);
             border-radius: 20px;
             padding: 40px;
             text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        .section-title {
-            font-size: 3rem; color: var(--packer-gold); margin-bottom: 20px;
-            text-transform: uppercase; text-shadow: 3px 3px 0 #000;
-        }
-
-        /* THE BIG REVEAL BOX */
         #display-box {
             font-size: 40px;
             font-family: 'Impact', sans-serif; color: var(--packer-gold);
@@ -94,20 +164,16 @@
             display: flex; justify-content: center; align-items: center; flex-direction: column;
             border-radius: 15px; box-shadow: 0 0 30px rgba(255, 182, 18, 0.4);
             text-transform: uppercase; word-break: break-word; padding: 20px; line-height: 1.2;
-            overflow: hidden; 
         }
 
-        /* DRAMATIC ANIMATION */
+        /* ANIMATION */
         @keyframes dramatic-slam {
             0% { transform: scale(4); opacity: 0; color: white; text-shadow: 0 0 50px white; }
             60% { transform: scale(0.9); opacity: 1; color: var(--packer-gold); }
             80% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
-        .slam-effect {
-            display: inline-block;
-            animation: dramatic-slam 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
+        .slam-effect { display: inline-block; animation: dramatic-slam 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
 
         input[type="text"] {
             font-size: 24px; padding: 15px; width: 80%; max-width: 500px;
@@ -122,32 +188,23 @@
             text-transform: uppercase; margin: 10px; transition: 0.3s;
         }
         .action-btn:hover { background-color: #ffe082; transform: scale(1.05); }
-        .action-btn:disabled { background: #555; color: #888; cursor: not-allowed; transform: none; }
+        .action-btn:disabled { background: #555; color: #888; cursor: not-allowed; }
 
         .setup-list { text-align: left; display: inline-block; margin: 20px auto; max-height: 300px; overflow-y:auto; border: 1px solid #444; padding: 10px; width: 80%;}
         .setup-list li { font-size: 1.1rem; margin-bottom: 5px; color: var(--packer-gold); border-bottom: 1px solid #333; }
-
-        #log-container {
-            margin-top: 40px; text-align: left; border-top: 4px solid var(--packer-gold);
-            padding-top: 20px; max-height: 600px; overflow-y: auto;
-        }
-        .entry-row {
-            background: rgba(0,0,0,0.8); margin: 8px 0; padding: 15px;
-            border-left: 8px solid var(--packer-gold); display: flex;
-            flex-direction: column;
-            font-size: 20px; font-family: sans-serif; gap: 5px;
-        }
+        .hidden { display: none; }
+        
+        #log-container { margin-top: 40px; text-align: left; border-top: 4px solid var(--packer-gold); padding-top: 20px; max-height: 600px; overflow-y: auto; }
+        .entry-row { background: rgba(0,0,0,0.8); margin: 8px 0; padding: 15px; border-left: 8px solid var(--packer-gold); display: flex; flex-direction: column; gap: 5px; }
         .entry-header { font-size: 16px; color: #aaa; }
         .entry-data { font-size: 24px; color: #fff; }
         .entry-owner-highlight { color: var(--packer-gold); font-weight: bold; }
 
-        .hidden { display: none; }
-
         @media (max-width: 900px) {
-             .main-header { padding: 20px; flex-direction: column; }
-             .logo-img { max-height: 180px; }
-             .header-title { font-size: 2.5rem; white-space: normal; text-align: center; }
-             #display-box { font-size: 30px; min-height: 200px; }
+             .main-header { padding: 20px; flex-direction: column; text-align: center; }
+             .logo-img { max-height: 140px; }
+             .header-title { font-size: 2.5rem; }
+             .logo-container { flex-direction: column; gap: 10px; }
         }
     </style>
 </head>
@@ -156,224 +213,99 @@
     <header class="main-header">
         <div class="logo-container">
             <img src="https://lawbrewing.github.io/swagelsirishpub/sip.png" alt="Swagel's Irish Pub Logo" class="logo-img">
-            <h1 class="header-title">Swagel's Irish Pub</h1>
+            <div class="header-title">Swagel's<br>Irish Pub</div>
         </div>
     </header>
 
+    <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('menu')">🍺 Drink Menu</button>
+        <button class="tab-btn" onclick="switchTab('rumble')">🤼 Rumble Pool</button>
+    </nav>
+
     <div class="container">
-        <div class="law-link-container">
-            <a href="https://lawbrewing.github.io/LawBrewing/index.html" class="law-link">🍺 See Law Brewing Live Taps</a>
+
+        <div id="view-menu" class="view-section active">
+            
+            <a href="https://lawbrewing.github.io/LawBrewing/index.html" class="law-brewing-banner">
+                <h2>🏭 ON TAP: LAW BREWING CO.</h2>
+                <p>Click here to view the live tap list from the brewery.</p>
+            </a>
+
+            <div class="menu-category">
+                <h3 class="category-title">Signature Cocktails</h3>
+                <div class="menu-grid">
+                    <div class="drink-card">
+                        <div class="drink-name">Jameson & Ginger</div>
+                        <div class="drink-desc">Irish Whiskey, Ginger Ale, Fresh Lime</div>
+                    </div>
+                    <div class="drink-card">
+                        <div class="drink-name">Swagel's Old Fashioned</div>
+                        <div class="drink-desc">Brandy (Wisconsin Style), Bitters, Cherry, Orange</div>
+                    </div>
+                    <div class="drink-card">
+                        <div class="drink-name">The Green & Gold</div>
+                        <div class="drink-desc">Midori, Vodka, Pineapple Juice (Packers Gameday Special)</div>
+                    </div>
+                    <div class="drink-card">
+                        <div class="drink-name">Irish Coffee</div>
+                        <div class="drink-desc">Hot Coffee, Irish Whiskey, Brown Sugar, Cream</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-category">
+                <h3 class="category-title">Bottles & Cans</h3>
+                <div class="menu-grid">
+                    <div class="drink-card"><div class="drink-name">Miller Lite</div><div class="drink-desc">Pilsner</div></div>
+                    <div class="drink-card"><div class="drink-name">Spotted Cow</div><div class="drink-desc">Farmhouse Ale</div></div>
+                    <div class="drink-card"><div class="drink-name">Guinness</div><div class="drink-desc">Stout (Can)</div></div>
+                    <div class="drink-card"><div class="drink-name">High Noon</div><div class="drink-desc">Assorted Flavors</div></div>
+                    <div class="drink-card"><div class="drink-name">Pabst Blue Ribbon</div><div class="drink-desc">Lager</div></div>
+                </div>
+            </div>
+
+            <div class="menu-category">
+                <h3 class="category-title">Spirits</h3>
+                <div class="menu-grid">
+                    <div class="drink-card"><div class="drink-name">Tito's Vodka</div></div>
+                    <div class="drink-card"><div class="drink-name">Captain Morgan</div></div>
+                    <div class="drink-card"><div class="drink-name">Jack Daniels</div></div>
+                    <div class="drink-card"><div class="drink-name">Tullamore Dew</div></div>
+                    <div class="drink-card"><div class="drink-name">Casamigos Tequila</div></div>
+                </div>
+            </div>
         </div>
 
-        <section class="rumble-section">
-            <h2 class="section-title" id="rumbleTitle">Rumble Pool Setup</h2>
-            
-            <div id="display-box">AWAITING SETUP...</div>
+        <div id="view-rumble" class="view-section">
+            <section class="rumble-section">
+                <div id="display-box">AWAITING SETUP...</div>
 
-            <div id="setupArea">
-                <p style="margin-bottom: 15px; color: #ddd;">Add players. Assignments will be dealt out randomly. Early registrants get extra spots if it doesn't divide evenly.</p>
-                <input type="text" id="playerNameInput" placeholder="PLAYER NAME" onkeypress="handleSetupEnter(event)">
-                <button class="action-btn" onclick="addPlayer()">Add Player</button>
-                
-                <div>
-                    <h3>Registered Players (<span id="playerCount">0</span>)</h3>
-                    <ul id="playerListDisplay" class="setup-list"></ul>
+                <div id="setupArea">
+                    <p style="margin-bottom: 15px; color: #ddd;">Register players. Spots assigned randomly.</p>
+                    <input type="text" id="playerNameInput" placeholder="PLAYER NAME" onkeypress="handleSetupEnter(event)">
+                    <button class="action-btn" onclick="addPlayer()">Add Player</button>
+                    
+                    <div>
+                        <h3>Registered Players (<span id="playerCount">0</span>)</h3>
+                        <ul id="playerListDisplay" class="setup-list"></ul>
+                    </div>
+                    <br>
+                    <button id="startBtn" class="action-btn" style="background-color: #000; color:var(--packer-gold); border: 2px solid var(--packer-gold); width: 80%;" onclick="startDraft()" disabled>🔒 LOCK IN & DEAL</button>
                 </div>
-                <br>
-                <button id="startBtn" class="action-btn" style="background-color: #000; color:var(--packer-gold); border: 2px solid var(--packer-gold); width: 80%;" onclick="startDraft()" disabled>🔒 LOCK IN & DEAL NUMBERS</button>
-            </div>
 
-            <div id="liveArea" class="hidden">
-                <h3 style="color: var(--cream-text); margin-bottom: 10px;">WHO ENTERED AT #<span id="nextEntryNum" style="color:var(--packer-gold); font-size: 1.5em;">1</span>?</h3>
-                <input type="text" id="wrestlerNameInput" placeholder="ENTER WRESTLER NAME" onkeypress="handleWrestlerEnter(event)">
-                <br>
-                <button id="revealBtn" class="action-btn" style="font-size: 30px; padding: 20px 40px; width: 80%;" onclick="revealNext()">REVEAL OWNER</button>
-            </div>
+                <div id="liveArea" class="hidden">
+                    <h3 style="color: var(--cream-text); margin-bottom: 10px;">WHO IS ENTRANT #<span id="nextEntryNum" style="color:var(--packer-gold); font-size: 1.5em;">1</span>?</h3>
+                    <input type="text" id="wrestlerNameInput" placeholder="ENTER WRESTLER NAME" onkeypress="handleWrestlerEnter(event)">
+                    <br>
+                    <button id="revealBtn" class="action-btn" style="font-size: 30px; padding: 20px 40px; width: 80%;" onclick="revealNext()">REVEAL OWNER</button>
+                </div>
 
-            <div id="log-container"></div>
-            <button class="action-btn" style="background: #8b0000; color: white; font-size: 14px; margin-top: 50px;" onclick="hardReset()">⚠ ADMIN: FULL RESET</button>
-        </section>
+                <div id="log-container"></div>
+                <button class="action-btn" style="background: #8b0000; color: white; font-size: 14px; margin-top: 50px;" onclick="hardReset()">⚠ ADMIN: FULL RESET</button>
+            </section>
+        </div>
+
     </div>
 
     <script>
-        // State Management
-        let appState = localStorage.getItem('rumbleState') || 'SETUP';
-        let players = JSON.parse(localStorage.getItem('rumblePlayers')) || [];
-        let entryOwnership = JSON.parse(localStorage.getItem('rumbleOwnership')) || {}; 
-        let currentRevealIndex = parseInt(localStorage.getItem('rumbleRevealIndex')) || 1;
-        let historyLog = JSON.parse(localStorage.getItem('rumbleHistoryLog')) || [];
-
-        function init() {
-            updatePlayerListUI();
-            checkStartCondition();
-            updateHistoryUI();
-            if (appState === 'LIVE') switchToLiveModeUI();
-            else if (appState === 'COMPLETE') switchToCompleteUI();
-        }
-
-        // --- PHASE 1: SETUP ---
-        function handleSetupEnter(e) { if (e.key === 'Enter') addPlayer(); }
-
-        function addPlayer() {
-            const input = document.getElementById('playerNameInput');
-            const name = input.value.trim().toUpperCase();
-            if (!name) return;
-            players.push(name);
-            localStorage.setItem('rumblePlayers', JSON.stringify(players));
-            input.value = '';
-            updatePlayerListUI();
-            checkStartCondition();
-        }
-
-        function updatePlayerListUI() {
-            document.getElementById('playerCount').innerText = players.length;
-            const list = document.getElementById('playerListDisplay');
-            list.innerHTML = players.map((p, i) => `<li>${i+1}. 👤 ${p}</li>`).join('');
-        }
-
-        function checkStartCondition() {
-            document.getElementById('startBtn').disabled = players.length === 0;
-            if(players.length > 0) {
-                 document.getElementById('display-box').innerText = "READY TO DEAL";
-                 document.getElementById('display-box').style.color = "var(--packer-gold)";
-            }
-        }
-
-        function startDraft() {
-            if (players.length === 0) return;
-            if (!confirm(`Ready to deal 30 entries to ${players.length} players?`)) return;
-
-            let numbers = Array.from({length: 30}, (_, i) => i + 1);
-            for (let i = numbers.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
-            }
-
-            entryOwnership = {};
-            for (let i = 0; i < 30; i++) {
-                const playerIndex = i % players.length;
-                entryOwnership[numbers[i]] = players[playerIndex];
-            }
-
-            appState = 'LIVE';
-            currentRevealIndex = 1;
-            saveData();
-            switchToLiveModeUI();
-        }
-
-        // --- PHASE 2: LIVE REVEAL ---
-        function switchToLiveModeUI() {
-            document.getElementById('setupArea').classList.add('hidden');
-            document.getElementById('liveArea').classList.remove('hidden');
-            document.getElementById('rumbleTitle').innerText = "LIVE RUMBLE REVEAL";
-            document.getElementById('display-box').innerText = "AWAITING ENTRANT...";
-            document.getElementById('display-box').style.color = "#fff";
-            updateRevealInputState();
-        }
-
-        function handleWrestlerEnter(e) { if (e.key === 'Enter') revealNext(); }
-
-        function revealNext() {
-            const wrestlerInput = document.getElementById('wrestlerNameInput');
-            const wrestlerName = wrestlerInput.value.trim().toUpperCase();
-            if(!wrestlerName) { alert("ENTER WRESTLER NAME!"); wrestlerInput.focus(); return; }
-
-            const btn = document.getElementById('revealBtn');
-            const display = document.getElementById('display-box');
-            const ownerName = entryOwnership[currentRevealIndex];
-
-            btn.disabled = true;
-            wrestlerInput.disabled = true;
-
-            // STAGE 1: THE HYPE (Fast Flicker)
-            let count = 0;
-            const flickerInterval = setInterval(() => {
-                display.innerHTML = `<span style="color:#fff; font-size:0.8em">${wrestlerName}</span><br>WHO OWNS THEM!?`;
-                display.style.color = count % 2 === 0 ? 'red' : 'var(--packer-gold)';
-                count++;
-                if (count > 25) {
-                    clearInterval(flickerInterval);
-                    // STAGE 2: THE SUSPENSE
-                    display.innerHTML = `<span style="color:#fff; font-size:0.8em">${wrestlerName}</span><br>BELONGS TO...<br><span style="font-size:1.5em; color:red;">...</span>`;
-                    setTimeout(() => {
-                        // STAGE 3: THE SLAM
-                        finalizeReveal(wrestlerName, ownerName);
-                    }, 1500);
-                }
-            }, 60);
-        }
-
-        function finalizeReveal(wrestlerName, ownerName) {
-            const display = document.getElementById('display-box');
-            display.innerHTML = `
-                <span style="color:#fff; font-size:0.7em">${wrestlerName}</span><br>
-                <span style="font-size:0.5em; color:#888;">BELONGS TO</span><br>
-                <span class="slam-effect">${ownerName}</span>
-            `;
-            
-            display.style.color = 'var(--packer-gold)';
-            display.style.boxShadow = "0 0 100px 20px #39ff14"; 
-            setTimeout(() => { display.style.boxShadow = "0 0 30px rgba(255, 182, 18, 0.4)"; }, 2000);
-
-            historyLog.push({ number: currentRevealIndex, wrestler: wrestlerName, owner: ownerName });
-            currentRevealIndex++;
-            if (currentRevealIndex > 30) appState = 'COMPLETE';
-            saveData();
-            updateHistoryUI();
-            
-            document.getElementById('wrestlerNameInput').value = '';
-            setTimeout(updateRevealInputState, 2000);
-        }
-
-        function updateRevealInputState() {
-             const btn = document.getElementById('revealBtn');
-             const input = document.getElementById('wrestlerNameInput');
-             const nextNumSpan = document.getElementById('nextEntryNum');
-
-             if (appState === 'COMPLETE') {
-                 switchToCompleteUI();
-             } else {
-                 btn.disabled = false;
-                 input.disabled = false;
-                 input.focus();
-                 nextNumSpan.innerText = currentRevealIndex;
-             }
-        }
-
-        function switchToCompleteUI() {
-             document.getElementById('liveArea').classList.add('hidden');
-             // Fixed quotes here:
-             document.getElementById('display-box').innerHTML = "<span class='slam-effect'>RUMBLE<br>COMPLETE</span>";
-             document.getElementById('display-box').style.color = "var(--packer-gold)";
-        }
-
-        function updateHistoryUI() {
-            const logDiv = document.getElementById('log-container');
-            logDiv.innerHTML = '';
-            historyLog.slice().reverse().forEach(item => {
-                logDiv.innerHTML += `
-                <div class="entry-row">
-                    <div class="entry-header">ENTRANT #${item.number}</div>
-                    <div class="entry-data">${item.wrestler} &rarr; <span class="entry-owner-highlight">${item.owner}</span></div>
-                </div>`;
-            });
-        }
-
-        function saveData() {
-            localStorage.setItem('rumbleState', appState);
-            localStorage.setItem('rumbleOwnership', JSON.stringify(entryOwnership));
-            localStorage.setItem('rumbleRevealIndex', currentRevealIndex);
-            localStorage.setItem('rumbleHistoryLog', JSON.stringify(historyLog));
-        }
-
-        function hardReset() {
-            if (confirm("DANGER: Delete all history and restart?")) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
-
-        init();
-    </script>
-</body>
-</html>
+        // --- TAB LOG
