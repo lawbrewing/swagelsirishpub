@@ -25,7 +25,7 @@
             padding-bottom: 50px;
         }
 
-        /* --- HEADER --- */
+        /* --- HEADER (Centered) --- */
         .main-header {
             width: 100%;
             background-color: white;
@@ -167,7 +167,8 @@
             border: 5px solid var(--packer-gold);
             transform: scale(1.05);
             box-shadow: 0 0 40px var(--packer-gold);
-            font-size: 1.8rem;
+            font-size: 2rem;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.2);
         }
 
         /* --- DRINK MENU STYLES --- */
@@ -267,7 +268,7 @@
             </a>
 
             <button id="randomShotBtn" class="random-shot-btn" onclick="spinRandomShot()">
-                Spin for a Shot
+                🎲 Spin for a Shot
             </button>
 
             <div id="dynamic-menu-container">
@@ -382,6 +383,7 @@
                     menuGroups[styleName].forEach(item => {
                         let shotHTML = '';
                         if (item.shot) {
+                            // "Shot:" removed, just Icon + Text
                             shotHTML = `<div class="suggested-shot">🥃 ${item.shot}</div>`;
                         }
 
@@ -435,8 +437,8 @@
                     // Final Pick
                     const winner = availableShots[Math.floor(Math.random() * availableShots.length)];
                     
-                    // Display Winner
-                    btn.innerText = "🥃 " + winner.name + " 🥃";
+                    // Display Winner (NO EMOJIS, just the name)
+                    btn.innerText = winner.name;
                     btn.classList.remove('spinning');
                     btn.classList.add('winner');
                 }
