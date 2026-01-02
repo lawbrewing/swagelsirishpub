@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swagel's Rumble Draw</title>
+    <style>
+        body {
+            background-color: #1b301b; /* Packers Green */
+            color: #d4af37; /* Gold */
+            font-family: 'Courier New', Courier, monospace; /* Vintage Typewriter */
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            font-family: 'Georgia', serif;
+            text-transform: uppercase;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 20px;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #d4af37;
+        }
+
+        #display-box {
+            font-size: 120px;
+            font-weight: bold;
+            color: #fff;
+            background: #000;
+            border: 8px solid #d4af37;
+            width: 200px;
+            height: 200px;
+            line-height: 200px;
+            margin: 20px auto;
+            border-radius: 50%; /* Circle shape */
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+        }
+
+        input[type="text"] {
+            font-size: 24px;
+            padding: 10px;
+            width: 80%;
+            margin-bottom: 20px;
+            border: 2px solid #d4af37;
+            background: #fff;
+            color: #000;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        button {
+            background: #d4af37;
+            color: #1b301b;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 15px 40px;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: transform 0.1s;
+        }
+
+        button:active { transform: scale(0.95); }
+        button:disabled { background: #555; cursor: not-allowed; }
+
+        #log-container {
+            margin-top: 30px;
+            text-align: left;
+            border-top: 1px solid #555;
+            padding-top: 20px;
+        }
+
+        .entry-row {
+            background: #222;
+            margin: 5px 0;
+            padding: 10px;
+            border-left: 5px solid #d4af37;
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+        }
+
+        .entry-number { font-weight: bold; color: #fff; }
+        .reset-btn { margin-top: 40px; background: #800000; color: white; font-size: 14px; padding: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Official Entry Draw</h1>
+        
+        <div id="display-box">?</div>
+
+        <input type="text" id="participantName" placeholder="ENTER NAME" onkeypress="handleEnter(event)">
+        <br>
+        <button id="drawBtn" onclick="drawEntry()">DRAW ENTRY</button>
+
+        <div id="status" style="margin-top: 10px; color: #aaa;">30 Numbers Remaining</div>
+
+        <div id="log-container">
+            </div>
+
+        <button class="reset-btn" onclick="resetPool()">⚠ RESET ALL DATA</button>
+    </div>
+
+    <script>
+        // Check for saved data or start fresh
+        let pool = JSON.parse(localStorage.getItem('rumblePool')) || Array.from({length: 30}, (_, i) => i + 1);
+        let history = JSON.parse(localStorage.getItem('rumbleHistory')) || [];
+
+        // Sound effect (optional, uses browser beep if possible, visual only for now)
+        
+        function updateUI() {
+            document.getElementById('status').innerText = `${pool.length} NUMBERS REMAINING`;
+            const logDiv = document.getElementById('log-container');
+            logDiv.innerHTML = '';
+            
+            // Show history in reverse order (newest on top)
+            history.slice().reverse().forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'entry-row';
+                row.innerHTML = `<span>${item.name}</span> <span class="entry-number">#${item.number}</span>`;
+                logDiv.appendChild(row);
+            });
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') drawEntry();
+        }
+
+        function drawEntry() {
+            const input = document.getElementById('participantName');
+            const name = input.value.trim().toUpperCase();
+            const btn = document.getElementById('drawBtn');
+
+            if (!name) return alert("Please enter a name!");
+            if (pool.length === 0) return alert("ALL NUMBERS HAVE BEEN DRAWN!");
+
+            // Disable button during animation
+            btn.disabled = true;
+            input.disabled = true;
+
+            // 1. Pick number logic
+            const randomIndex = Math.floor(Math.random() * pool.length);
+            const drawnNumber = pool[randomIndex];
+
+            // 2. Animation loop
+            let count = 0;
+            const display = document.getElementById('display-box');
+            
+            const interval = setInterval(() => {
+                display.innerText = Math.floor(Math.random() * 30) + 1;
+                display.style.backgroundColor = count % 2 === 0 ? '#000' : '#222';
+                count++;
+                
+                if (count > 20) {
+                    clearInterval(interval);
+                    finalizeDraw(name, drawnNumber, randomIndex);
+                    btn.disabled = false;
+                    input.disabled = false;
+                    input.value = '';
+                    input.focus();
+                }
+            }, 50);
+        }
+
+        function finalizeDraw(name, number, index) {
+            // Remove from pool
+            pool.splice(index, 1);
+            
+            // Add to history
+            history.push({ name: name, number: number });
+            
+            // Show result
+            const display = document.getElementById('display-box');
+            display.innerText = number;
+            display.style.backgroundColor = '#1b301b'; // Green on success
+            
+            // Save to browser memory
+            localStorage.setItem('rumblePool', JSON.stringify(pool));
+            localStorage.setItem('rumbleHistory', JSON.stringify(history));
+
+            updateUI();
+        }
+
+        function resetPool() {
+            if (confirm("Are you sure? This will delete all current entries!")) {
+                pool = Array.from({length: 30}, (_, i) => i + 1);
+                history = [];
+                localStorage.removeItem('rumblePool');
+                localStorage.removeItem('rumbleHistory');
+                document.getElementById('display-box').innerText = "?";
+                document.getElementById('display-box').style.backgroundColor = "#000";
+                updateUI();
+            }
+        }
+
+        // Initialize on load
+        updateUI();
+    </script>
+</body>
+</html>
