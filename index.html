@@ -33,20 +33,46 @@
         .c3 { top: 40%; left: 30%; animation-duration: 45s; opacity: 0.5; }
         @keyframes drift-smoke { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(150px, 50px) scale(1.3); } }
 
-        /* --- HEADER --- */
+        /* --- HEADER (FIXED LAYOUT) --- */
         .main-header {
-            width: 100%; background-color: white; display: flex; justify-content: center; align-items: center;
-            padding: 20px; border-bottom: 10px solid var(--packer-gold); box-shadow: 0 0 50px rgba(0,0,0,0.7);
+            width: 100%; background-color: white; 
+            display: flex; justify-content: center; align-items: center;
+            padding: 15px 20px; 
+            border-bottom: 10px solid var(--packer-gold); 
+            box-shadow: 0 0 50px rgba(0,0,0,0.7);
             position: relative; z-index: 10;
         }
-        .logo-img {
-            max-height: 300px; width: auto; max-width: 100%; object-fit: contain;
-            display: block; background-color: white; padding: 10px; border-radius: 50%;
-            box-shadow: 0 0 30px rgba(255, 182, 18, 0.9), inset 0 0 20px rgba(0,0,0,0.1); border: 2px solid #eee;
+
+        .logo-container { 
+            display: flex; 
+            flex-direction: row; /* Forces side-by-side */
+            align-items: center; 
+            justify-content: center;
+            gap: 30px; 
+            max-width: 100%; 
         }
+
+        .logo-img {
+            max-height: 250px; /* Slightly smaller to fit side-by-side better */
+            width: auto; 
+            object-fit: contain;
+            display: block; 
+            background-color: white; 
+            padding: 10px; 
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(255, 182, 18, 0.9), inset 0 0 20px rgba(0,0,0,0.1); 
+            border: 2px solid #eee;
+        }
+        
         .header-title {
-            font-size: 4rem; color: var(--packer-green); text-transform: uppercase;
-            font-weight: 900; letter-spacing: 2px; text-shadow: 3px 3px 0 var(--packer-gold); line-height: 1;
+            font-size: 4rem; 
+            color: var(--packer-green); 
+            text-transform: uppercase;
+            font-weight: 900; 
+            letter-spacing: 2px; 
+            text-shadow: 3px 3px 0 var(--packer-gold); 
+            line-height: 0.9;
+            text-align: left; /* Left align text next to logo */
         }
 
         /* --- NAVIGATION --- */
@@ -95,7 +121,11 @@
         .entry-row { background: rgba(0,0,0,0.8); margin: 8px 0; padding: 15px; border-left: 8px solid var(--packer-gold); display: flex; flex-direction: column; }
         .entry-owner-highlight { color: var(--packer-gold); font-weight: bold; }
 
-        @media (max-width: 900px) { .logo-img { max-height: 180px; } .header-title { font-size: 2.5rem; } .main-header { flex-direction: column; } }
+        /* Force column only on very small screens */
+        @media (max-width: 600px) { 
+            .logo-container { flex-direction: column; text-align: center; } 
+            .header-title { text-align: center; font-size: 3rem; }
+        }
     </style>
 </head>
 <body>
@@ -313,7 +343,7 @@
             const entry = history.find(h => h.w === winW);
             if (!entry) return alert("Wrestler not found!");
             
-            // --- CORRECTED: USE DESSERT BOTTLES FOR VICTORY SHOT ---
+            // --- USE DESSERT BOTTLES FOR VICTORY SHOT ---
             const victoryShot = dessertBottles.length > 0 
                 ? dessertBottles[Math.floor(Math.random()*dessertBottles.length)] 
                 : "THE HOUSE SPECIAL";
