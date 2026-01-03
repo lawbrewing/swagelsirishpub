@@ -22,33 +22,34 @@
             background-image: linear-gradient(to bottom, #203731, #0e1a17);
             color: var(--cream-text);
             line-height: 1.6;
-            padding-bottom: 200px; /* Massive padding to ensure there is room to scroll */
+            padding-bottom: 200px;
         }
+
+        /* --- SMOKE EFFECT --- */
+        .smoke-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; overflow: hidden; }
+        .cloud { position: absolute; width: 800px; height: 500px; background: radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%); border-radius: 50%; filter: blur(60px); animation: drift-smoke 30s infinite alternate ease-in-out; }
+        .c1 { top: -10%; left: -10%; animation-duration: 25s; }
+        .c2 { bottom: -10%; right: -10%; animation-duration: 35s; background: radial-gradient(ellipse at center, rgba(255,182,18,0.05) 0%, rgba(255,182,18,0) 70%); }
+        .c3 { top: 40%; left: 30%; animation-duration: 45s; opacity: 0.5; }
+        @keyframes drift-smoke { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(150px, 50px) scale(1.3); } }
 
         /* --- HEADER --- */
         .main-header {
-            width: 100%; background-color: white;
-            display: flex; justify-content: center; align-items: center;
-            padding: 20px; border-bottom: 10px solid var(--packer-gold);
-            box-shadow: 0 0 50px rgba(0,0,0,0.7);
+            width: 100%; background-color: white; display: flex; justify-content: center; align-items: center;
+            padding: 20px; border-bottom: 10px solid var(--packer-gold); box-shadow: 0 0 50px rgba(0,0,0,0.7);
+            position: relative; z-index: 10;
         }
-
-        .logo-container { display: flex; align-items: center; gap: 40px; max-width: 100%; }
-
         .logo-img {
             max-height: 300px; width: auto; max-width: 100%; object-fit: contain;
             display: block; background-color: white; padding: 10px; border-radius: 50%;
-            box-shadow: 0 0 30px rgba(255, 182, 18, 0.9), inset 0 0 20px rgba(0,0,0,0.1);
-            border: 2px solid #eee;
+            box-shadow: 0 0 30px rgba(255, 182, 18, 0.9), inset 0 0 20px rgba(0,0,0,0.1); border: 2px solid #eee;
         }
-        
         .header-title {
             font-size: 4rem; color: var(--packer-green); text-transform: uppercase;
-            font-weight: 900; letter-spacing: 2px; text-shadow: 3px 3px 0 var(--packer-gold);
-            line-height: 1;
+            font-weight: 900; letter-spacing: 2px; text-shadow: 3px 3px 0 var(--packer-gold); line-height: 1;
         }
 
-        /* --- NAVIGATION TABS --- */
+        /* --- NAVIGATION --- */
         .nav-tabs { display: flex; justify-content: center; background: #000; border-bottom: 2px solid var(--packer-gold); position: sticky; top: 0; z-index: 100; }
         .tab-btn { flex: 1; padding: 20px; background: #111; color: #666; border: none; font-size: 1.2rem; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; max-width: 500px; font-family: 'Verdana', sans-serif; }
         .tab-btn:hover { background: #222; color: white; }
@@ -59,7 +60,7 @@
         .view-section.active { display: block; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- BUTTONS --- */
+        /* --- BANNER & BUTTONS --- */
         .law-brewing-banner { background: linear-gradient(135deg, #1a1a1a, #000); border: 2px solid var(--packer-gold); padding: 35px; text-align: center; border-radius: 8px; margin-bottom: 20px; cursor: pointer; text-decoration: none; display: block; overflow: hidden; animation: pulse-glow 3s infinite ease-in-out; }
         .law-brewing-banner h2 { color: var(--packer-gold); font-size: 2.2rem; margin-bottom: 10px; text-transform: uppercase; }
         .law-brewing-banner p { color: #ccc; }
@@ -69,22 +70,23 @@
         .random-shot-btn.spinning { background: #222; color: var(--packer-gold); border: 2px solid var(--packer-gold); }
         .random-shot-btn.winner { background: #fff; color: var(--packer-green); border: 5px solid var(--packer-gold); font-size: 2rem; box-shadow: 0 0 40px var(--packer-gold); }
 
-        /* --- DRINK MENU --- */
+        /* --- MENU STYLE --- */
         .category-title { font-size: 2.5rem; color: var(--packer-gold); border-bottom: 2px solid var(--packer-gold); margin: 40px 0 20px; text-transform: uppercase; }
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .drink-card { background: var(--card-bg); border-left: 5px solid var(--packer-gold); padding: 20px; border-radius: 0 10px 10px 0; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; }
+        .drink-card { background: var(--card-bg); border-left: 5px solid var(--packer-gold); padding: 20px; border-radius: 0 10px 10px 0; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; backdrop-filter: blur(5px); }
         .drink-name { font-size: 1.4rem; font-weight: bold; color: white; margin-bottom: 5px; }
         .drink-desc { font-size: 1rem; color: #aaa; font-style: italic; }
         .suggested-shot { margin-top: auto; padding: 8px; background: rgba(255, 182, 18, 0.15); border: 1px solid var(--packer-gold); color: var(--packer-gold); font-size: 0.9rem; font-weight: bold; text-transform: uppercase; text-align: center; border-radius: 4px; }
 
-        /* --- RUMBLE STYLES --- */
+        /* --- RUMBLE STYLE --- */
         .rumble-section { background-color: rgba(0, 0, 0, 0.6); border: 5px solid var(--packer-gold); border-radius: 20px; padding: 40px; text-align: center; }
         #display-box { font-size: 40px; font-family: 'Impact', sans-serif; color: var(--packer-gold); background: #000; border: 6px solid var(--packer-gold); width: 95%; margin: 30px auto; min-height: 250px; display: flex; justify-content: center; align-items: center; flex-direction: column; border-radius: 15px; box-shadow: 0 0 30px rgba(255, 182, 18, 0.4); text-transform: uppercase; word-break: break-word; padding: 20px; line-height: 1.2; }
         @keyframes dramatic-slam { 0% { transform: scale(4); opacity: 0; color: white; } 100% { transform: scale(1); opacity: 1; } }
         .slam-effect { display: inline-block; animation: dramatic-slam 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
         
         input[type="text"] { font-size: 24px; padding: 15px; width: 80%; max-width: 500px; border: 3px solid var(--packer-gold); background: #fff; color: #000; text-transform: uppercase; text-align: center; font-weight: bold; margin-bottom: 20px; }
-        .action-btn { background: var(--packer-gold); color: var(--packer-green); font-size: 24px; font-weight: bold; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; margin: 10px; }
+        .action-btn { background: var(--packer-gold); color: var(--packer-green); font-size: 24px; font-weight: bold; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; margin: 10px; transition: 0.3s; }
+        .action-btn:hover { transform: scale(1.05); background: #ffe082; }
         .action-btn:disabled { background: #555; color: #888; cursor: not-allowed; }
         
         .setup-list { text-align: left; display: inline-block; margin: 20px auto; max-height: 300px; overflow-y:auto; border: 1px solid #444; padding: 10px; width: 80%; color: var(--packer-gold); }
@@ -93,14 +95,16 @@
         .entry-row { background: rgba(0,0,0,0.8); margin: 8px 0; padding: 15px; border-left: 8px solid var(--packer-gold); display: flex; flex-direction: column; }
         .entry-owner-highlight { color: var(--packer-gold); font-weight: bold; }
 
-        @media (max-width: 900px) {
-             .logo-img { max-height: 180px; } 
-             .header-title { font-size: 2.5rem; }
-             .main-header { flex-direction: column; }
-        }
+        @media (max-width: 900px) { .logo-img { max-height: 180px; } .header-title { font-size: 2.5rem; } .main-header { flex-direction: column; } }
     </style>
 </head>
 <body>
+
+    <div class="smoke-wrap">
+        <div class="cloud c1"></div>
+        <div class="cloud c2"></div>
+        <div class="cloud c3"></div>
+    </div>
 
     <header class="main-header">
         <div class="logo-container">
@@ -120,7 +124,7 @@
                 <h2>VISIT LAW BREWING</h2>
                 <p>Live Tap List & Brewery Games</p>
             </a>
-            <button id="randomShotBtn" class="random-shot-btn" onclick="spinRandomShot()">Spin for a Shot</button>
+            <button id="randomShotBtn" class="random-shot-btn" onclick="spinRandomShot()">🎲 SPIN FOR A SHOT</button>
             <div id="dynamic-menu-container"></div>
         </div>
 
@@ -131,15 +135,15 @@
                     <input type="text" id="playerNameInput" placeholder="PLAYER NAME" onkeypress="if(event.key==='Enter')addPlayer()">
                     <br><button class="action-btn" onclick="addPlayer()">ADD PLAYER</button>
                     <ul id="playerListDisplay" class="setup-list"></ul>
-                    <br><button id="startBtn" class="action-btn" style="background:#000; color:gold;" onclick="startDraft()" disabled>LOCK IN & DEAL</button>
+                    <br><button id="startBtn" class="action-btn" style="background:#000; color:gold; border:2px solid gold;" onclick="startDraft()" disabled>LOCK IN & DEAL</button>
                 </div>
                 <div id="liveArea" class="hidden">
-                    <h3 id="roundTitle">WHO IS ENTRANT #1?</h3>
+                    <h3 id="roundTitle" style="color:var(--packer-gold); margin-bottom:15px;">WHO IS ENTRANT #1?</h3>
                     <input type="text" id="wrestlerNameInput" placeholder="WRESTLER NAME" onkeypress="if(event.key==='Enter')revealNext()">
                     <br><button id="revealBtn" class="action-btn" onclick="revealNext()">REVEAL OWNER</button>
                 </div>
                 <div id="winnerArea" class="hidden">
-                    <h3>🏆 FINAL STEP: WHO WON THE RUMBLE? 🏆</h3>
+                    <h3 style="color:var(--packer-gold);">WHO WON THE RUMBLE?</h3>
                     <input type="text" id="finalWinnerInput" placeholder="WINNING WRESTLER" onkeypress="if(event.key==='Enter')declareWinner()">
                     <br><button class="action-btn" onclick="declareWinner()">ANNOUNCE CHAMPION</button>
                 </div>
@@ -151,45 +155,89 @@
 
     <script>
         const MENU_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREewsVa0iUjwwA2x4dspHtSLp40KAw5cpS-ycsjQEKjRbxydLTpRynTAvlkMK3S1ue9LXi-L3hKxLD/pub?output=csv";
-        let availableBottles = [];
+        let dessertBottles = []; // Only dessert styles go here
         let currentTab = 'menu';
         let userInteracting = false;
         let interactionTimer;
 
-        // --- THE NEW FORCE-SCROLL ENGINE ---
+        // --- KIOSK SCROLL ---
         function startKiosk() {
             setInterval(() => {
-                // If on Rumble tab or someone touched the screen recently, skip.
                 if (currentTab !== 'menu' || userInteracting) return;
-
                 let startY = window.pageYOffset;
-                window.scrollBy(0, 1); // Move 1 pixel down
-                let endY = window.pageYOffset;
-
-                // If endY is the same as startY, we hit the bottom
-                if (startY === endY && startY > 100) {
-                    userInteracting = true; // Pause
+                window.scrollBy(0, 1);
+                if (startY === window.pageYOffset && startY > 100) {
+                    userInteracting = true;
                     setTimeout(() => {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                         setTimeout(() => { userInteracting = false; }, 2000);
                     }, 5000);
                 }
-            }, 40); // 40ms = smooth steady speed
+            }, 40);
         }
 
-        // Global activity listener
         function handleInteraction() {
             userInteracting = true;
             clearTimeout(interactionTimer);
-            interactionTimer = setTimeout(() => {
-                userInteracting = false;
-            }, 8000); // Resume after 8 seconds of stillness
+            interactionTimer = setTimeout(() => { userInteracting = false; }, 8000);
+        }
+        ['mousedown', 'mousemove', 'touchstart', 'keypress'].forEach(e => window.addEventListener(e, handleInteraction));
+
+        // --- LOAD MENU (SMART FILTER) ---
+        function parseCSV(d) {
+            const res = []; let r = []; let c = ''; let q = false;
+            for (let i=0; i<d.length; i++) {
+                if (d[i]==='"' && q && d[i+1]==='"') { c+='"'; i++; } else if (d[i]==='"') q=!q; else if (d[i]===',' && !q) { r.push(c); c=''; } else if (d[i]==='\n' && !q) { r.push(c); res.push(r); r=[]; c=''; } else c+=d[i];
+            }
+            if(c||r.length){r.push(c); res.push(r);} return res;
         }
 
-        window.addEventListener('mousedown', handleInteraction);
-        window.addEventListener('mousemove', handleInteraction);
-        window.addEventListener('touchstart', handleInteraction);
-        window.addEventListener('keypress', handleInteraction);
+        async function loadMenu() {
+            try {
+                const res = await fetch(MENU_SHEET_URL + '&t=' + Date.now());
+                const rows = parseCSV(await res.text());
+                const container = document.getElementById('dynamic-menu-container');
+                container.innerHTML = ''; dessertBottles = [];
+                let groups = {}; let order = [];
+
+                rows.forEach((row, i) => {
+                    if (i === 0 || !row[0]) return;
+                    const [name, style, desc, shot] = [row[0].trim(), row[1].trim(), row[2].trim(), row[3].trim()];
+                    
+                    // --- SMART DESSERT FILTER ---
+                    const styleUpper = style.toUpperCase();
+                    if (styleUpper.includes("CREAM") || styleUpper.includes("FLAVORED") || styleUpper.includes("LIQUEUR") || styleUpper.includes("CIDER") || styleUpper.includes("SCHNAPPS")) {
+                        dessertBottles.push(name);
+                    }
+
+                    if (!groups[style]) { groups[style]=[]; order.push(style); }
+                    groups[style].push({ name, desc, shot });
+                });
+
+                order.forEach(s => {
+                    let html = `<h3 class="category-title">${s}</h3><div class="menu-grid">`;
+                    groups[s].forEach(item => {
+                        let sHTML = item.shot ? `<div class="suggested-shot">🥃 ${item.shot}</div>` : '';
+                        html += `<div class="drink-card"><div><div class="drink-name">${item.name}</div><div class="drink-desc">${item.desc}</div></div>${sHTML}</div>`;
+                    });
+                    container.innerHTML += html + '</div>';
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        function spinRandomShot() {
+            const btn = document.getElementById('randomShotBtn');
+            if (!dessertBottles.length || btn.classList.contains('spinning')) return;
+            btn.classList.add('spinning'); btn.classList.remove('winner');
+            let count = 0;
+            const int = setInterval(() => {
+                btn.innerText = dessertBottles[Math.floor(Math.random()*dessertBottles.length)];
+                if (++count > 20) {
+                    clearInterval(int);
+                    btn.classList.replace('spinning', 'winner');
+                }
+            }, 50);
+        }
 
         function switchTab(t) {
             currentTab = t;
@@ -197,67 +245,10 @@
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(`view-${t}`).classList.add('active');
             document.getElementById(`btn-${t}`).classList.add('active');
-            if (t === 'menu') {
-                window.scrollTo(0,0);
-                userInteracting = false;
-            } else {
-                userInteracting = true; // Freeze scroll on Rumble tab
-            }
+            if (t === 'menu') { window.scrollTo(0,0); userInteracting = false; } else { userInteracting = true; }
         }
 
-        function parseCSV(d) {
-            const res = []; let r = []; let c = ''; let q = false;
-            for (let i=0; i<d.length; i++) {
-                if (d[i]==='"' && q && d[i+1]==='"') { c+='"'; i++; }
-                else if (d[i]==='"') q=!q;
-                else if (d[i]===',' && !q) { r.push(c); c=''; }
-                else if (d[i]==='\n' && !q) { r.push(c); res.push(r); r=[]; c=''; }
-                else c+=d[i];
-            }
-            if(c||r.length){r.push(c); res.push(r);} return res;
-        }
-
-        async function loadMenu() {
-            const res = await fetch(MENU_SHEET_URL + '&t=' + Date.now());
-            const rows = parseCSV(await res.text());
-            const container = document.getElementById('dynamic-menu-container');
-            container.innerHTML = ''; availableBottles = [];
-            let groups = {}; let order = [];
-
-            rows.forEach((row, i) => {
-                if (i === 0 || !row[0]) return;
-                const [name, style, desc, shot] = [row[0].trim(), row[1].trim(), row[2].trim(), row[3].trim()];
-                availableBottles.push(name);
-                if (!groups[style]) { groups[style]=[]; order.push(style); }
-                groups[style].push({ name, desc, shot });
-            });
-
-            order.forEach(s => {
-                let html = `<h3 class="category-title">${s}</h3><div class="menu-grid">`;
-                groups[s].forEach(item => {
-                    let sHTML = item.shot ? `<div class="suggested-shot">🥃 ${item.shot}</div>` : '';
-                    html += `<div class="drink-card"><div><div class="drink-name">${item.name}</div><div class="drink-desc">${item.desc}</div></div>${sHTML}</div>`;
-                });
-                container.innerHTML += html + '</div>';
-            });
-        }
-
-        function spinRandomShot() {
-            const btn = document.getElementById('randomShotBtn');
-            if (!availableBottles.length || btn.classList.contains('spinning')) return;
-            btn.classList.add('spinning'); btn.classList.remove('winner');
-            let count = 0;
-            const int = setInterval(() => {
-                btn.innerText = availableBottles[Math.floor(Math.random()*availableBottles.length)];
-                if (++count > 20) {
-                    clearInterval(int);
-                    btn.innerText = availableBottles[Math.floor(Math.random()*availableBottles.length)];
-                    btn.classList.replace('spinning', 'winner');
-                }
-            }, 50);
-        }
-
-        // --- RUMBLE LOGIC ---
+        // --- RUMBLE ENGINE ---
         let state = localStorage.getItem('rState') || 'SETUP';
         let players = JSON.parse(localStorage.getItem('rPlayers')) || [];
         let ownership = JSON.parse(localStorage.getItem('rOwn')) || {}; 
@@ -266,12 +257,9 @@
 
         function initRumble() {
             updatePlayerListUI(); updateHistoryUI();
-            if (state === 'LIVE') switchToLive();
-            else if (state === 'WINNER') switchToWinner();
-            else if (state === 'COMPLETE') switchToCompleteUI();
+            if (state === 'LIVE') switchToLive(); else if (state === 'WINNER') switchToWinner(); else if (state === 'COMPLETE') switchToCompleteUI();
             document.getElementById('startBtn').disabled = !players.length;
         }
-
         function addPlayer() {
             const val = document.getElementById('playerNameInput').value.trim().toUpperCase();
             if (val) { players.push(val); localStorage.setItem('rPlayers', JSON.stringify(players)); }
@@ -279,27 +267,24 @@
             updatePlayerListUI(); document.getElementById('startBtn').disabled = !players.length;
         }
         function updatePlayerListUI() { document.getElementById('playerListDisplay').innerHTML = players.map(p => `<li>${p}</li>`).join(''); }
-
         function startDraft() {
             if (!confirm("Deal 30 entries?")) return;
             let nums = Array.from({length:30}, (_,i)=>i+1).sort(()=>Math.random()-0.5);
             ownership = {}; nums.forEach((n, i) => ownership[n] = players[i % players.length]);
             state = 'LIVE'; revealIdx = 1; save(); switchToLive();
         }
-
         function switchToLive() {
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('liveArea').classList.remove('hidden');
             document.getElementById('roundTitle').innerText = `WHO IS ENTRANT #${revealIdx}?`;
+            document.getElementById('wrestlerNameInput').focus();
         }
-
         function revealNext() {
             const wName = document.getElementById('wrestlerNameInput').value.trim().toUpperCase();
-            if (!wName) return alert("ENTER WRESTLER!");
+            if (!wName) return;
             const display = document.getElementById('display-box');
             const owner = ownership[revealIdx];
             document.getElementById('revealBtn').disabled = true;
-
             let c = 0;
             const int = setInterval(() => {
                 display.innerHTML = `<span style="font-size:0.7em; color:white">${wName}</span><br>BELONGS TO...`;
@@ -321,31 +306,30 @@
                 }
             }, 60);
         }
-
+        function switchToWinner() { document.getElementById('liveArea').classList.add('hidden'); document.getElementById('winnerArea').classList.remove('hidden'); document.getElementById('display-box').innerText = "THE DRAFT IS OVER. WHO WON?"; }
+        
         function declareWinner() {
-            const winningWrestler = document.getElementById('finalWinnerInput').value.trim().toUpperCase();
-            const winningEntry = history.find(h => h.w === winningWrestler);
-            if (!winningEntry) return alert("Wrestler not found!");
-            const realWinner = winningEntry.o;
-            const victoryShot = availableBottles[Math.floor(Math.random()*availableBottles.length)] || "THE HOUSE SPECIAL";
+            const winW = document.getElementById('finalWinnerInput').value.trim().toUpperCase();
+            const entry = history.find(h => h.w === winW);
+            if (!entry) return alert("Wrestler not found!");
+            
+            // --- CORRECTED: USE DESSERT BOTTLES FOR VICTORY SHOT ---
+            const victoryShot = dessertBottles.length > 0 
+                ? dessertBottles[Math.floor(Math.random()*dessertBottles.length)] 
+                : "THE HOUSE SPECIAL";
+
             state = 'COMPLETE'; save();
             document.getElementById('winnerArea').classList.add('hidden');
-            const box = document.getElementById('display-box');
-            box.innerHTML = `<span style="font-size:0.5em; color:white">🏆 CHAMPION: ${realWinner} 🏆</span><br><span style="font-size:0.4em; color:gold;">VICTORY SHOT: ${victoryShot}</span>`;
+            document.getElementById('display-box').innerHTML = `<span style="font-size:0.5em; color:white">🏆 CHAMPION: ${entry.o} 🏆</span><br><span style="font-size:0.4em; color:gold;">VICTORY SHOT: ${victoryShot}</span>`;
             confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
         }
-
-        function switchToWinner() { document.getElementById('liveArea').classList.add('hidden'); document.getElementById('winnerArea').classList.remove('hidden'); document.getElementById('display-box').innerText = "THE DRAFT IS OVER. WHO WON?"; }
+        
         function switchToCompleteUI() { document.getElementById('setupArea').classList.add('hidden'); document.getElementById('liveArea').classList.add('hidden'); document.getElementById('display-box').innerHTML = "RUMBLE COMPLETE"; }
         function updateHistoryUI() { document.getElementById('log-container').innerHTML = history.slice().reverse().map(h => `<div class="entry-row"><div style="font-size:12px; color:#aaa">#${h.n}</div><div>${h.w} &rarr; <span class="entry-owner-highlight">${h.o}</span></div></div>`).join(''); }
         function save() { localStorage.setItem('rState', state); localStorage.setItem('rOwn', JSON.stringify(ownership)); localStorage.setItem('rIdx', revealIdx); localStorage.setItem('rHist', JSON.stringify(history)); }
         function hardReset() { if(confirm("RESET ALL?")) { localStorage.clear(); location.reload(); } }
 
-        window.onload = async () => { 
-            await loadMenu(); 
-            initRumble(); 
-            startKiosk(); // Start the force-scroll loop
-        };
+        window.onload = async () => { await loadMenu(); initRumble(); startKiosk(); };
     </script>
 </body>
 </html>
