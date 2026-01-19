@@ -151,9 +151,18 @@
         .entry-num { color: #aaa; font-size: 0.8em; margin-right: 8px; }
 
         /* --- HALL OF CHAMPIONS STYLES --- */
-        .champions-section { margin-top: 80px; border-top: 5px double var(--packer-gold); padding-top: 40px; }
-        .champions-title { font-family: 'Uncial Antiqua', cursive; color: var(--packer-gold); font-size: 3rem; text-shadow: 2px 2px 0 #000; margin-bottom: 20px; }
-        .champ-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        .champions-section { margin-top: 50px; border-top: 5px double var(--packer-gold); padding-top: 30px; }
+        
+        .toggle-champ-btn {
+            background: transparent; border: 2px solid var(--packer-gold); color: var(--packer-gold);
+            font-family: 'Anton', sans-serif; font-size: 1.5rem; padding: 10px 20px; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; width: 100%;
+        }
+        .toggle-champ-btn:hover { background: var(--packer-gold); color: var(--packer-green); }
+
+        .champ-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 20px; }
+        .champ-grid.hidden { display: none; }
+
         .champ-card { 
             background: linear-gradient(45deg, #000, #222); 
             border: 2px solid gold; border-radius: 10px; padding: 20px; width: 250px;
@@ -226,8 +235,8 @@
                 <div id="scoreboard-container"></div>
                 
                 <div class="champions-section">
-                    <h2 class="champions-title">HALL OF CHAMPIONS</h2>
-                    <div id="champions-container" class="champ-grid">Loading History...</div>
+                    <button class="toggle-champ-btn" onclick="toggleChampions()">📜 VIEW HALL OF CHAMPIONS 📜</button>
+                    <div id="champions-container" class="champ-grid hidden">Loading History...</div>
                 </div>
 
                 <button class="action-btn" style="background:#8b0000; color:white; font-size:12px; margin-top:50px;" onclick="hardReset()">ADMIN: RESET ALL</button>
@@ -237,11 +246,8 @@
 
     <script>
         const MENU_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREewsVa0iUjwwA2x4dspHtSLp40KAw5cpS-ycsjQEKjRbxydLTpRynTAvlkMK3S1ue9LXi-L3hKxLD/pub?output=csv";
-        
-        // -------------------------------------------------------------
-        // PASTE YOUR NEW CHAMPIONS CSV LINK HERE
+        // LINK UPDATED FROM USER REQUEST
         const CHAMPIONS_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREewsVa0iUjwwA2x4dspHtSLp40KAw5cpS-ycsjQEKjRbxydLTpRynTAvlkMK3S1ue9LXi-L3hKxLD/pub?gid=660560000&single=true&output=csv";
-        // -------------------------------------------------------------
 
         let dessertBottles = []; 
         let currentTab = 'menu';
@@ -309,10 +315,6 @@
 
         async function loadChampions() {
             try {
-                if(CHAMPIONS_SHEET_URL.includes("PASTE")) {
-                    document.getElementById('champions-container').innerHTML = "<div style='color:#aaa'>CSV LINK MISSING IN CODE</div>";
-                    return;
-                }
                 const res = await fetch(CHAMPIONS_SHEET_URL + '&t=' + Date.now());
                 const rows = parseCSV(await res.text());
                 const container = document.getElementById('champions-container');
@@ -331,7 +333,21 @@
                         </div>
                     `;
                 }
-            } catch(e) { console.error("Error loading champions:", e); }
+            } catch(e) { 
+                document.getElementById('champions-container').innerHTML = "<div style='color:white; width:100%; text-align:center;'>Unable to load Champions history. Check CSV link.</div>";
+            }
+        }
+
+        function toggleChampions() {
+            const container = document.getElementById('champions-container');
+            const btn = document.querySelector('.toggle-champ-btn');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                btn.innerText = "✖ HIDE HALL OF CHAMPIONS ✖";
+            } else {
+                container.classList.add('hidden');
+                btn.innerText = "📜 VIEW HALL OF CHAMPIONS 📜";
+            }
         }
 
         function spinRandomShot() {
