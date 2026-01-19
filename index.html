@@ -143,46 +143,26 @@
         .setup-list { text-align: left; display: inline-block; margin: 20px auto; max-height: 300px; overflow-y:auto; border: 1px solid #444; padding: 10px; width: 80%; color: var(--packer-gold); font-family: 'Anton', sans-serif; letter-spacing: 1px; }
         .hidden { display: none; }
 
-        /* --- SCOREBOARD GRID --- */
-        #scoreboard-container {
-            margin-top: 40px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            text-align: left;
-        }
+        /* --- SCOREBOARD & CHAMPIONS --- */
+        #scoreboard-container { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; text-align: left; }
+        .player-card { background: rgba(0,0,0,0.8); border: 2px solid var(--packer-gold); border-radius: 8px; padding: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .player-header { font-family: 'Graduate', serif; color: var(--packer-gold); border-bottom: 1px solid #555; text-align: center; font-size: 1.3rem; margin-bottom: 8px; padding-bottom: 5px; text-transform: uppercase; }
+        .wrestler-item { font-family: 'Anton', sans-serif; font-size: 1.1rem; color: #fff; padding: 2px 0; border-bottom: 1px dashed #333; letter-spacing: 1px; }
+        .entry-num { color: #aaa; font-size: 0.8em; margin-right: 8px; }
 
-        .player-card {
-            background: rgba(0,0,0,0.8);
-            border: 2px solid var(--packer-gold);
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        /* --- HALL OF CHAMPIONS STYLES --- */
+        .champions-section { margin-top: 80px; border-top: 5px double var(--packer-gold); padding-top: 40px; }
+        .champions-title { font-family: 'Uncial Antiqua', cursive; color: var(--packer-gold); font-size: 3rem; text-shadow: 2px 2px 0 #000; margin-bottom: 20px; }
+        .champ-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        .champ-card { 
+            background: linear-gradient(45deg, #000, #222); 
+            border: 2px solid gold; border-radius: 10px; padding: 20px; width: 250px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); 
+            text-align: center; font-family: 'Anton', sans-serif; letter-spacing: 1px;
         }
-
-        .player-header {
-            font-family: 'Graduate', serif;
-            color: var(--packer-gold);
-            border-bottom: 1px solid #555;
-            text-align: center;
-            font-size: 1.3rem;
-            margin-bottom: 8px;
-            padding-bottom: 5px;
-            text-transform: uppercase;
-        }
-
-        .wrestler-item {
-            font-family: 'Anton', sans-serif;
-            font-size: 1.1rem;
-            color: #fff;
-            padding: 2px 0;
-            border-bottom: 1px dashed #333;
-            letter-spacing: 1px;
-        }
-
-        .entry-num {
-            color: #aaa; font-size: 0.8em; margin-right: 8px;
-        }
+        .champ-year { font-size: 2rem; color: gold; border-bottom: 1px solid #555; margin-bottom: 10px; }
+        .champ-name { font-size: 1.5rem; color: white; }
+        .champ-wrestler { font-size: 1rem; color: #aaa; margin-top: 5px; }
 
         @media (max-width: 600px) { 
             .logo-container { flex-direction: column; text-align: center; } 
@@ -245,6 +225,11 @@
 
                 <div id="scoreboard-container"></div>
                 
+                <div class="champions-section">
+                    <h2 class="champions-title">HALL OF CHAMPIONS</h2>
+                    <div id="champions-container" class="champ-grid">Loading History...</div>
+                </div>
+
                 <button class="action-btn" style="background:#8b0000; color:white; font-size:12px; margin-top:50px;" onclick="hardReset()">ADMIN: RESET ALL</button>
             </section>
         </div>
@@ -252,6 +237,12 @@
 
     <script>
         const MENU_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREewsVa0iUjwwA2x4dspHtSLp40KAw5cpS-ycsjQEKjRbxydLTpRynTAvlkMK3S1ue9LXi-L3hKxLD/pub?output=csv";
+        
+        // -------------------------------------------------------------
+        // PASTE YOUR NEW CHAMPIONS CSV LINK HERE
+        const CHAMPIONS_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREewsVa0iUjwwA2x4dspHtSLp40KAw5cpS-ycsjQEKjRbxydLTpRynTAvlkMK3S1ue9LXi-L3hKxLD/pubhtml?gid=660560000&single=true";
+        // -------------------------------------------------------------
+
         let dessertBottles = []; 
         let currentTab = 'menu';
         let lastInteraction = Date.now();
@@ -263,34 +254,23 @@
                 const now = Date.now();
                 const timeSinceAct = now - lastInteraction;
                 
-                // Set Delay based on Tab
-                // Menu = 3 seconds (3000ms)
-                // Rumble = 15 seconds (15000ms)
+                // Menu = 3s wait, Rumble = 15s wait
                 const delayThreshold = currentTab === 'menu' ? 3000 : 15000;
 
                 if (timeSinceAct > delayThreshold) {
-                    // It's time to scroll
                     let startY = window.pageYOffset;
-                    window.scrollBy(0, 1); // Move down 1px
-                    
-                    // Check if we hit bottom
+                    window.scrollBy(0, 1);
                     if (window.pageYOffset === startY && startY > 50) {
-                        // Pause at bottom then reset
-                        lastInteraction = Date.now() + 5000; // Fake interaction to pause for 5s
-                        setTimeout(() => {
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }, 2000);
+                        lastInteraction = Date.now() + 5000; 
+                        setTimeout(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, 2000);
                     }
                 }
-            }, 40); // 40ms speed
+            }, 40);
         }
-
-        // Interaction Listeners
         ['mousedown', 'mousemove', 'touchstart', 'keypress'].forEach(e => {
             window.addEventListener(e, () => { lastInteraction = Date.now(); });
         });
 
-        // --- LOAD MENU ---
         function parseCSV(d) {
             const res = []; let r = []; let c = ''; let q = false;
             for (let i=0; i<d.length; i++) {
@@ -306,20 +286,16 @@
                 const container = document.getElementById('dynamic-menu-container');
                 container.innerHTML = ''; dessertBottles = [];
                 let groups = {}; let order = [];
-
                 rows.forEach((row, i) => {
                     if (i === 0 || !row[0]) return;
                     const [name, style, desc, shot] = [row[0].trim(), row[1].trim(), row[2].trim(), row[3].trim()];
-                    
                     const styleUpper = style.toUpperCase();
                     if (styleUpper.includes("CREAM") || styleUpper.includes("FLAVORED") || styleUpper.includes("LIQUEUR") || styleUpper.includes("CIDER") || styleUpper.includes("SCHNAPPS")) {
                         dessertBottles.push(name);
                     }
-
                     if (!groups[style]) { groups[style]=[]; order.push(style); }
                     groups[style].push({ name, desc, shot });
                 });
-
                 order.forEach(s => {
                     let html = `<h3 class="category-title">${s}</h3><div class="menu-grid">`;
                     groups[s].forEach(item => {
@@ -331,26 +307,44 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- SPIN BUTTON (10s RESET) ---
+        async function loadChampions() {
+            try {
+                if(CHAMPIONS_SHEET_URL.includes("PASTE")) {
+                    document.getElementById('champions-container').innerHTML = "<div style='color:#aaa'>CSV LINK MISSING IN CODE</div>";
+                    return;
+                }
+                const res = await fetch(CHAMPIONS_SHEET_URL + '&t=' + Date.now());
+                const rows = parseCSV(await res.text());
+                const container = document.getElementById('champions-container');
+                container.innerHTML = '';
+
+                // Skip header (i=0)
+                for(let i=1; i<rows.length; i++) {
+                    const row = rows[i];
+                    if(!row[0]) continue;
+                    const [year, winner, wrestler, entry] = row;
+                    container.innerHTML += `
+                        <div class="champ-card">
+                            <div class="champ-year">${year}</div>
+                            <div class="champ-name">🏆 ${winner}</div>
+                            <div class="champ-wrestler">${wrestler} (#${entry})</div>
+                        </div>
+                    `;
+                }
+            } catch(e) { console.error("Error loading champions:", e); }
+        }
+
         function spinRandomShot() {
             const btn = document.getElementById('randomShotBtn');
             if (!dessertBottles.length || btn.classList.contains('spinning')) return;
-            
-            btn.classList.add('spinning'); 
-            btn.classList.remove('winner');
-            
+            btn.classList.add('spinning'); btn.classList.remove('winner');
             let count = 0;
             const int = setInterval(() => {
                 btn.innerText = dessertBottles[Math.floor(Math.random()*dessertBottles.length)];
                 if (++count > 20) {
                     clearInterval(int);
                     btn.classList.replace('spinning', 'winner');
-                    
-                    // Auto-Reset after 10 seconds
-                    setTimeout(() => {
-                        btn.classList.remove('winner');
-                        btn.innerText = "🎲 SPIN FOR A SHOT";
-                    }, 10000);
+                    setTimeout(() => { btn.classList.remove('winner'); btn.innerText = "🎲 SPIN FOR A SHOT"; }, 10000);
                 }
             }, 50);
         }
@@ -362,10 +356,9 @@
             document.getElementById(`view-${t}`).classList.add('active');
             document.getElementById(`btn-${t}`).classList.add('active');
             window.scrollTo(0,0);
-            lastInteraction = Date.now(); // Reset timer on switch
+            lastInteraction = Date.now();
         }
 
-        // --- RUMBLE ENGINE ---
         let state = localStorage.getItem('rState') || 'SETUP';
         let players = JSON.parse(localStorage.getItem('rPlayers')) || [];
         let ownership = JSON.parse(localStorage.getItem('rOwn')) || {}; 
@@ -424,47 +417,32 @@
             }, 60);
         }
         function switchToWinner() { document.getElementById('liveArea').classList.add('hidden'); document.getElementById('winnerArea').classList.remove('hidden'); document.getElementById('display-box').innerText = "THE DRAFT IS OVER. WHO WON?"; }
-        
         function declareWinner() {
             const winW = document.getElementById('finalWinnerInput').value.trim().toUpperCase();
             const entry = history.find(h => h.w === winW);
             if (!entry) return alert("Wrestler not found!");
-            
-            const victoryShot = dessertBottles.length > 0 
-                ? dessertBottles[Math.floor(Math.random()*dessertBottles.length)] 
-                : "THE HOUSE SPECIAL";
-
+            const victoryShot = dessertBottles.length > 0 ? dessertBottles[Math.floor(Math.random()*dessertBottles.length)] : "THE HOUSE SPECIAL";
             state = 'COMPLETE'; save();
             document.getElementById('winnerArea').classList.add('hidden');
             document.getElementById('display-box').innerHTML = `<span style="font-size:0.5em; color:white">🏆 CHAMPION: ${entry.o} 🏆</span><br><span style="font-size:0.4em; color:gold;">VICTORY SHOT: ${victoryShot}</span>`;
             confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
         }
-        
         function switchToCompleteUI() { document.getElementById('setupArea').classList.add('hidden'); document.getElementById('liveArea').classList.add('hidden'); document.getElementById('display-box').innerHTML = "RUMBLE COMPLETE"; }
         
-        // --- SCOREBOARD ---
         function updateScoreboard() {
             const container = document.getElementById('scoreboard-container');
             container.innerHTML = '';
             players.forEach(player => {
                 const team = history.filter(h => h.o === player);
-                let wrestlersHTML = team.map(h => 
-                    `<div class="wrestler-item"><span class="entry-num">#${h.n}</span>${h.w}</div>`
-                ).join('');
-
-                container.innerHTML += `
-                    <div class="player-card">
-                        <div class="player-header">${player}</div>
-                        ${wrestlersHTML}
-                    </div>
-                `;
+                let wrestlersHTML = team.map(h => `<div class="wrestler-item"><span class="entry-num">#${h.n}</span>${h.w}</div>`).join('');
+                container.innerHTML += `<div class="player-card"><div class="player-header">${player}</div>${wrestlersHTML}</div>`;
             });
         }
 
         function save() { localStorage.setItem('rState', state); localStorage.setItem('rOwn', JSON.stringify(ownership)); localStorage.setItem('rIdx', revealIdx); localStorage.setItem('rHist', JSON.stringify(history)); }
         function hardReset() { if(confirm("RESET ALL?")) { localStorage.clear(); location.reload(); } }
 
-        window.onload = async () => { await loadMenu(); initRumble(); runKioskLoop(); };
+        window.onload = async () => { await loadMenu(); await loadChampions(); initRumble(); runKioskLoop(); };
     </script>
 </body>
 </html>
