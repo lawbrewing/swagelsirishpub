@@ -27,7 +27,7 @@
             background-image: linear-gradient(to bottom, #203731, #0e1a17);
             color: var(--cream-text);
             line-height: 1.6;
-            padding-bottom: 200px;
+            padding-bottom: 200px; /* Extra space for scrolling */
         }
 
         /* --- SMOKE EFFECT --- */
@@ -111,7 +111,7 @@
         .drink-desc { font-size: 1rem; color: #aaa; font-style: italic; }
         .suggested-shot { margin-top: auto; padding: 8px; background: rgba(255, 182, 18, 0.15); border: 1px solid var(--packer-gold); color: var(--packer-gold); font-size: 0.9rem; font-weight: bold; text-transform: uppercase; text-align: center; border-radius: 4px; }
 
-        /* --- RUMBLE STYLE (WWE VIBE) --- */
+        /* --- RUMBLE STYLE --- */
         .rumble-section { background-color: rgba(0, 0, 0, 0.6); border: 5px solid var(--packer-gold); border-radius: 20px; padding: 40px; text-align: center; }
         
         #display-box { 
@@ -143,7 +143,7 @@
         .setup-list { text-align: left; display: inline-block; margin: 20px auto; max-height: 300px; overflow-y:auto; border: 1px solid #444; padding: 10px; width: 80%; color: var(--packer-gold); font-family: 'Anton', sans-serif; letter-spacing: 1px; }
         .hidden { display: none; }
 
-        /* --- NEW SCOREBOARD GRID --- */
+        /* --- SCOREBOARD GRID --- */
         #scoreboard-container {
             margin-top: 40px;
             display: grid;
@@ -181,9 +181,7 @@
         }
 
         .entry-num {
-            color: #aaa;
-            font-size: 0.8em;
-            margin-right: 8px;
+            color: #aaa; font-size: 0.8em; margin-right: 8px;
         }
 
         @media (max-width: 600px) { 
@@ -256,31 +254,41 @@
         const MENU_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREewsVa0iUjwwA2x4dspHtSLp40KAw5cpS-ycsjQEKjRbxydLTpRynTAvlkMK3S1ue9LXi-L3hKxLD/pub?output=csv";
         let dessertBottles = []; 
         let currentTab = 'menu';
-        let userInteracting = false;
-        let interactionTimer;
+        let lastInteraction = Date.now();
+        let isAutoScrolling = false;
 
-        // --- KIOSK SCROLL ---
-        function startKiosk() {
+        // --- DUAL MODE KIOSK ENGINE ---
+        function runKioskLoop() {
             setInterval(() => {
-                if (currentTab !== 'menu' || userInteracting) return;
-                let startY = window.pageYOffset;
-                window.scrollBy(0, 1);
-                if (startY === window.pageYOffset && startY > 100) {
-                    userInteracting = true;
-                    setTimeout(() => {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                        setTimeout(() => { userInteracting = false; }, 2000);
-                    }, 5000);
+                const now = Date.now();
+                const timeSinceAct = now - lastInteraction;
+                
+                // Set Delay based on Tab
+                // Menu = 3 seconds (3000ms)
+                // Rumble = 15 seconds (15000ms)
+                const delayThreshold = currentTab === 'menu' ? 3000 : 15000;
+
+                if (timeSinceAct > delayThreshold) {
+                    // It's time to scroll
+                    let startY = window.pageYOffset;
+                    window.scrollBy(0, 1); // Move down 1px
+                    
+                    // Check if we hit bottom
+                    if (window.pageYOffset === startY && startY > 50) {
+                        // Pause at bottom then reset
+                        lastInteraction = Date.now() + 5000; // Fake interaction to pause for 5s
+                        setTimeout(() => {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }, 2000);
+                    }
                 }
-            }, 40);
+            }, 40); // 40ms speed
         }
 
-        function handleInteraction() {
-            userInteracting = true;
-            clearTimeout(interactionTimer);
-            interactionTimer = setTimeout(() => { userInteracting = false; }, 8000);
-        }
-        ['mousedown', 'mousemove', 'touchstart', 'keypress'].forEach(e => window.addEventListener(e, handleInteraction));
+        // Interaction Listeners
+        ['mousedown', 'mousemove', 'touchstart', 'keypress'].forEach(e => {
+            window.addEventListener(e, () => { lastInteraction = Date.now(); });
+        });
 
         // --- LOAD MENU ---
         function parseCSV(d) {
@@ -323,16 +331,26 @@
             } catch(e) { console.error(e); }
         }
 
+        // --- SPIN BUTTON (10s RESET) ---
         function spinRandomShot() {
             const btn = document.getElementById('randomShotBtn');
             if (!dessertBottles.length || btn.classList.contains('spinning')) return;
-            btn.classList.add('spinning'); btn.classList.remove('winner');
+            
+            btn.classList.add('spinning'); 
+            btn.classList.remove('winner');
+            
             let count = 0;
             const int = setInterval(() => {
                 btn.innerText = dessertBottles[Math.floor(Math.random()*dessertBottles.length)];
                 if (++count > 20) {
                     clearInterval(int);
                     btn.classList.replace('spinning', 'winner');
+                    
+                    // Auto-Reset after 10 seconds
+                    setTimeout(() => {
+                        btn.classList.remove('winner');
+                        btn.innerText = "🎲 SPIN FOR A SHOT";
+                    }, 10000);
                 }
             }, 50);
         }
@@ -343,7 +361,8 @@
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(`view-${t}`).classList.add('active');
             document.getElementById(`btn-${t}`).classList.add('active');
-            if (t === 'menu') { window.scrollTo(0,0); userInteracting = false; } else { userInteracting = true; }
+            window.scrollTo(0,0);
+            lastInteraction = Date.now(); // Reset timer on switch
         }
 
         // --- RUMBLE ENGINE ---
@@ -354,7 +373,7 @@
         let history = JSON.parse(localStorage.getItem('rHist')) || [];
 
         function initRumble() {
-            updatePlayerListUI(); updateScoreboard(); // Changed from updateHistoryUI to updateScoreboard
+            updatePlayerListUI(); updateScoreboard();
             if (state === 'LIVE') switchToLive(); else if (state === 'WINNER') switchToWinner(); else if (state === 'COMPLETE') switchToCompleteUI();
             document.getElementById('startBtn').disabled = !players.length;
         }
@@ -394,7 +413,7 @@
                     history.push({ n: revealIdx, w: wName, o: owner });
                     revealIdx++;
                     if (revealIdx > 30) state = 'WINNER';
-                    save(); updateScoreboard(); // Update Grid
+                    save(); updateScoreboard(); 
                     setTimeout(() => {
                         display.style.boxShadow = "0 0 30px gold";
                         document.getElementById('wrestlerNameInput').value = '';
@@ -423,17 +442,12 @@
         
         function switchToCompleteUI() { document.getElementById('setupArea').classList.add('hidden'); document.getElementById('liveArea').classList.add('hidden'); document.getElementById('display-box').innerHTML = "RUMBLE COMPLETE"; }
         
-        // --- NEW SCOREBOARD RENDERER ---
+        // --- SCOREBOARD ---
         function updateScoreboard() {
             const container = document.getElementById('scoreboard-container');
             container.innerHTML = '';
-            
-            // 1. Loop through all players (even those with no wrestlers yet)
             players.forEach(player => {
-                // Filter history for this player's wrestlers
                 const team = history.filter(h => h.o === player);
-                
-                // Build the Card HTML
                 let wrestlersHTML = team.map(h => 
                     `<div class="wrestler-item"><span class="entry-num">#${h.n}</span>${h.w}</div>`
                 ).join('');
@@ -450,7 +464,7 @@
         function save() { localStorage.setItem('rState', state); localStorage.setItem('rOwn', JSON.stringify(ownership)); localStorage.setItem('rIdx', revealIdx); localStorage.setItem('rHist', JSON.stringify(history)); }
         function hardReset() { if(confirm("RESET ALL?")) { localStorage.clear(); location.reload(); } }
 
-        window.onload = async () => { await loadMenu(); initRumble(); startKiosk(); };
+        window.onload = async () => { await loadMenu(); initRumble(); runKioskLoop(); };
     </script>
 </body>
 </html>
